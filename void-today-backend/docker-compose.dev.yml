@@ -1,0 +1,14 @@
+services:
+  db:
+    container_name: db
+    image: postgres:18-alpine
+    ports:
+      - '5432:5432'
+    env_file:
+      - .env.dev
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+volumes:
+  postgres-data:
+    driver: local
