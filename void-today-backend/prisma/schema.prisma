@@ -1,0 +1,444 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ENUMS
+enum SubscriptionPlan {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum ProjectRole {
+  MANAGER
+  MEMBER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+  ARCHIVED
+}
+
+enum TaskType {
+  MICRO
+  MACRO
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum RepeatType {
+  NONE
+  DAILY
+  WEEKLY
+}
+
+enum GoalLevel {
+  LIFE
+  MONTH
+  WEEK
+}
+
+enum NoteType {
+  ARTICLE
+  THOUGH
+  SHOPPING
+  WISHLIST
+}
+
+enum MoodType {
+  DEAD
+  OK
+  ANGRY
+  FIRE
+  CHAOS
+}
+
+enum SprintStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_DUE
+  TASK_DONE
+  SPRINT_START
+  SPRINT_END
+  INVITE
+  MENITION
+}
+
+// USER AND AUTH
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String
+  name     String?
+  avatar   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tokens         Token[]
+  subscriptions  Subscription[]
+  ownedOrgs      Organization[]       @relation("OrgOwner")
+  orgMembers     OrganizationMember[]
+  projectMembers ProjectMember[]
+  assignedTasks  Task[]               @relation("TaskAssignee")
+  createdTasks   Task[]               @relation("TaskCreator")
+  goals          Goal[]
+  notes          Note[]
+  moods          Mood[]
+  notification   Notification[]
+  categories     Category[]
+
+  @@map("users")
+}
+
+model Token {
+  id        String @id @default(uuid())
+  token     String @unique
+  userId    String
+  userAgent String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, userAgent])
+  @@map("tokens")
+}
+
+// SUBSCRIPTION
+
+model Subscription {
+  id        String           @id @default(uuid())
+  userId    String           @unique
+  plan      SubscriptionPlan @default(FREE)
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// ORGANIZATION (BUSINESS)
+model Organization {
+  id      String  @id @default(uuid())
+  name    String
+  logo    String?
+  ownerId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner       User                 @relation("OrgOwner", fields: [ownerId], references: [id])
+  members     OrganizationMember[]
+  departments Department[]
+  projects    Project[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id     String  @id @default(uuid())
+  userId String
+  orgId  String
+  role   OrgRole @default(MEMBER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+  @@map("organization_members")
+}
+
+model Department {
+  id    String @id @default(uuid())
+  name  String
+  orgId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  projects Project[]
+
+  @@map("departments")
+}
+
+// PROJECT AND TEAM (PRO+ BUSINESS)
+
+model Project {
+  id           String  @id @default(uuid())
+  name         String
+  description  String?
+  orgId        String?
+  departmentId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org        Organization?   @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  department Department?     @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  members    ProjectMember[]
+  boards     KanbanBoard[]
+  sprints    Sprint[]
+  tasks      Task[]
+  goals      Goal[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String      @id @default(uuid())
+  userId    String
+  projectId String
+  role      ProjectRole @default(MEMBER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@map("project_members")
+}
+
+// KANBAN
+
+model KanbanBoard {
+  id        String @id @default(uuid())
+  name      String
+  projectId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  columns KanbanColumn[]
+
+  @@map("kanban_boards")
+}
+
+model KanbanColumn {
+  id      String @id @default(uuid())
+  name    String
+  order   Int    @default(0)
+  boardId String
+
+  wipLimit Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  board KanbanBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@map("kanban_columns")
+}
+
+// AGILE AND SPRINT
+
+model Sprint {
+  id        String       @id @default(uuid())
+  name      String
+  goal      String?
+  status    SprintStatus @default(PLANNED)
+  startDate DateTime?
+  endDate   DateTime?
+  projectId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@map("sprints")
+}
+
+// TASK
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  type        TaskType   @default(MICRO)
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+  repeat      RepeatType @default(NONE)
+  completedAt DateTime?
+
+  creatorId  String
+  assigneeId String?
+
+  categoryId     String?
+  goalId         String?
+  projectId      String?
+  kanbanColumnId String?
+  sprintId       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator      User          @relation("TaskCreator", fields: [creatorId], references: [id])
+  assignee     User?         @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  category     Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  goal         Goal?         @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  project      Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  kanbanColumn KanbanColumn? @relation(fields: [kanbanColumnId], references: [id], onDelete: SetNull)
+  sprint       Sprint?       @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  checkpoints  CheckPoint[]
+
+  @@map("tasks")
+}
+
+model CheckPoint {
+  id     String  @id @default(uuid())
+  title  String
+  done   Boolean @default(false)
+  order  Int     @default(0)
+  taskId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("checkpoints")
+}
+
+// GOAL
+
+model Goal {
+  id         String    @id @default(uuid())
+  title      String
+  level      GoalLevel
+  progress   Float     @default(0)
+  deadline   DateTime?
+  parentId   String?
+  categoryId String?
+  userId     String
+  projectId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   Goal?     @relation("GoalHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Goal[]    @relation("GoalHierarchy")
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project  Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  tasks    Task[]
+
+  @@map("goals")
+}
+
+// CATEGORY
+
+model Category {
+  id     String  @id @default(uuid())
+  name   String
+  color  String  @default("#c0392b")
+  icon   String?
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+  goals Goal[]
+
+  @@map("categories")
+}
+
+// NOTE
+
+model Note {
+  id       String   @id @default(uuid())
+  type     NoteType
+  title    String?
+  content  String?
+  url      String?
+  tags     String[]
+  done     Boolean  @default(false)
+  price    Float?
+  imageUrl String?
+  userId   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notes")
+}
+
+// MOOD
+
+model Mood {
+  id     String   @id @default(uuid())
+  value  MoodType
+  date   DateTime @default(now())
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("moods")
+}
+
+// NOTIFICATION
+
+model Notification {
+  id     String           @id @default(uuid())
+  type   NotificationType
+  text   String
+  read   Boolean          @default(false)
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
