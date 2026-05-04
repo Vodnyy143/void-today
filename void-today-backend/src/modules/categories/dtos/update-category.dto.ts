@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { createZodDto } from 'nestjs-zod';
 
-const createCategorySchema = z.object({
-  name: z.string().min(1).max(100),
+const updateCategorySchema = z.object({
+  name: z.string().min(1).max(100).optional(),
   color: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/, 'Invalid hex color')
@@ -10,4 +10,4 @@ const createCategorySchema = z.object({
   icon: z.string().optional(),
 });
 
-export class CreateCategoryDto extends createZodDto(createCategorySchema) {}
+export class UpdateCategoryDto extends createZodDto(updateCategorySchema) {}

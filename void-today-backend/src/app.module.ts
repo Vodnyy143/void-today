@@ -6,6 +6,8 @@ import { PrismaModule } from '@core/prisma/prisma.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { TasksModule } from '@modules/tasks/tasks.module';
 import { CategoriesModule } from '@modules/categories/categories.module';
+import { GoalsModule } from '@modules/goals/goals.module';
+import { NotesModule } from '@modules/notes/notes.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { CategoriesModule } from '@modules/categories/categories.module';
     AuthModule,
     TasksModule,
     CategoriesModule,
+    GoalsModule,
+    NotesModule,
   ],
 })
 export class AppModule {}

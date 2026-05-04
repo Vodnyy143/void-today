@@ -106,7 +106,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   tokens         Token[]
-  subscriptions  Subscription[]
+  subscription   Subscription?
   ownedOrgs      Organization[]       @relation("OrgOwner")
   orgMembers     OrganizationMember[]
   projectMembers ProjectMember[]

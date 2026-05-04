@@ -27,7 +27,9 @@
       "@modules": ["src/modules"],
       "@modules/*": ["src/modules/*"],
       "@generated": ["generated"],
-      "@generated/*": ["generated/*"]
+      "@generated/*": ["generated/*"],
+      "@common": ["src/common"],
+      "@common/*": ["src/common/*"]
     }
   }
 }
