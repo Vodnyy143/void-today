@@ -10,6 +10,8 @@ import { GoalsModule } from '@modules/goals/goals.module';
 import { NotesModule } from '@modules/notes/notes.module';
 import { MoodsModule } from '@modules/moods/moods.module';
 import { StatsModule } from '@modules/stats/stats.module';
+import { ProjectsModule } from '@modules/projects/projects.module';
+import { UsersModule } from '@modules/users/users.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { StatsModule } from '@modules/stats/stats.module';
     NotesModule,
     MoodsModule,
     StatsModule,
+    ProjectsModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
