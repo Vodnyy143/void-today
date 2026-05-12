@@ -49,7 +49,7 @@ api.interceptors.response.use(
                 return api(originalRequest);
             } catch (err) {
                 processQueue(err);
-                window.location.href = '/login';
+                window.location.href = '/';
                 return Promise.reject(err);
             } finally {
                 isRefreshing = false;
