@@ -1,3 +1,15 @@
 .layout {
   min-height: 100vh;
+  background: var(--bg-primary);
+
+  &__container {
+    display: flex;
+    height: calc(100vh - var(--header-height));
+  }
+
+  &__main {
+    flex: 1;
+    overflow-y: auto;
+    min-width: 0;
+  }
 }

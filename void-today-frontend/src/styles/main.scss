@@ -1,11 +1,17 @@
+@use "./base/variables" as *;
 @use "./base/reset" as *;
 @use "./elements/button" as *;
 @use "./elements/input" as *;
 @use "./widgets/login-form" as *;
+@use "./widgets/register-form" as *;
 @use "./modules/header" as *;
 @use "./modules/todo-sectoin" as *;
 @use "./modules/auth-modal" as *;
+@use "./modules/profile-modal" as *;
+@use "./modules/sidebar" as *;
+@use "./modules/create-project-modal" as *;
 @use "./templates/layout" as *;
+@use "./pages/home-page" as *;
 
 body {
   background: white;

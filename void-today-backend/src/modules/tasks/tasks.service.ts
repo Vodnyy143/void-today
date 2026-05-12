@@ -9,6 +9,7 @@ import {
 import { UpdateTaskDto } from '@modules/tasks/dtos/update-task.dto';
 import { GetTasksQueryDto } from '@modules/tasks/dtos/get-tasks-query.dto';
 import { CreateTaskDto } from '@modules/tasks/dtos/create-task.dto';
+import { startOfDay, endOfDay, addDays } from 'date-fns';
 
 @Injectable()
 export class TasksService {
@@ -51,36 +52,59 @@ export class TasksService {
 
   async findAll(userId: string, query: GetTasksQueryDto) {
     const where: any = {
-      OR: [{ creatorId: userId }, { assigneeId: userId }],
+      creatorId: userId,
     };
 
     if (query.status) {
       where.status = query.status;
     }
 
-    if (query.categoryId) {
-      where.categoryId = query.categoryId;
-    }
-
-    if (query.goalId) {
-      where.goalId = query.goalId;
+    if (query.priority) {
+      where.priority = query.priority;
     }
 
     if (query.projectId) {
       where.projectId = query.projectId;
     }
 
-    return this.prisma.task.findMany({
+    if (query.view && query.view !== 'all') {
+      // Используем UTC для всех вычислений
+      const now = new Date();
+
+      if (query.view === 'today') {
+        // Начало и конец сегодняшнего дня в UTC
+        where.dueDate = {
+          gte: startOfDay(now),
+          lte: endOfDay(now),
+        };
+      } else if (query.view === 'tomorrow') {
+        // Начало и конец завтрашнего дня в UTC
+        const tomorrow = addDays(now, 1);
+        where.dueDate = {
+          gte: startOfDay(tomorrow),
+          lte: endOfDay(tomorrow),
+        };
+      } else if (query.view === 'week') {
+        // От начала сегодня до конца через 7 дней
+        const weekEnd = addDays(now, 7);
+        where.dueDate = {
+          gte: startOfDay(now),
+          lte: endOfDay(weekEnd),
+        };
+      }
+    }
+
+    const tasks = await this.prisma.task.findMany({
       where,
       include: {
-        checkpoints: { orderBy: { order: 'asc' } },
-        category: true,
-        goal: true,
-        assignee: { select: { id: true, email: true, name: true } },
-        creator: { select: { id: true, email: true, name: true } },
+        checkpoints: {
+          orderBy: { order: 'asc' },
+        },
       },
-      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+      orderBy: { createdAt: 'desc' },
     });
+
+    return tasks;
   }
 
   async findOne(taskId: string, userId: string) {

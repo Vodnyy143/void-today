@@ -1,15 +1,32 @@
 import {Route, Routes} from "react-router-dom";
 
-import TodosPage from "../pages/TodosPage";
-import HomePage from "../pages/HomePage";
 import MainLayout from "../components/templates/MainLayout";
+import HomePage from "../pages/HomePage.tsx";
+import PublicRoute from "../components/templates/PublicRoute.tsx";
+import ProtectedRoute from "../components/templates/ProtectedRoute.tsx";
+import TodosPage from "../pages/TodosPage";
 
 const AppRoutes = () => {
     return (
         <MainLayout>
             <Routes>
-                <Route path="/" element={<HomePage/>} />
-                <Route path="/todos" element={<TodosPage/>} />
+                <Route
+                    path="/"
+                    element={
+                        <PublicRoute>
+                            <HomePage/>
+                        </PublicRoute>
+                    }
+                />
+
+                <Route
+                    path="/todos"
+                    element={
+                        <ProtectedRoute>
+                            <TodosPage/>
+                        </ProtectedRoute>
+                    }
+                />
             </Routes>
         </MainLayout>
     );

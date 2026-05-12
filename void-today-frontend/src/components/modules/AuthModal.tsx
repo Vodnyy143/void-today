@@ -31,9 +31,9 @@ const AuthModal = ({isOpen, onClose}: Props) => {
                 </button>
 
                 {mode === 'login' ? (
-                    <LoginForm />
+                    <LoginForm onSuccess={onClose} />
                 ) : (
-                    <RegisterForm/>
+                    <RegisterForm onSuccess={onClose} />
                 )}
 
                 <div className='auth-modal__footer'>

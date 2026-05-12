@@ -3,6 +3,7 @@ import { createZodDto } from 'nestjs-zod';
 
 const createProjectSchema = z.object({
   name: z.string(),
+  color: z.string().optional(),
   description: z.string().optional(),
   orgId: z.string().optional().nullable(),
   departmentId: z.string().optional().nullable(),

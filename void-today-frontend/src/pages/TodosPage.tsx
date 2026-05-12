@@ -1,4 +1,4 @@
-import TodoSection from "../../components/modules/TodoSection";
+import TodoSection from "../components/modules/TodoSection.tsx";
 
 const TodosPage = () => {
     return (

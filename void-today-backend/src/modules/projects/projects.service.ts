@@ -19,6 +19,7 @@ export class ProjectsService {
         name: dto.name,
         description: dto.description,
         orgId: dto.orgId,
+        color: dto.color,
         departmentId: dto.departmentId,
         members: {
           create: {
@@ -114,6 +115,7 @@ export class ProjectsService {
       where: { id: projectId },
       data: {
         name: dto.name,
+        color: dto.color,
         description: dto.description,
       },
       include: {

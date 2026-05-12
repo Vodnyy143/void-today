@@ -205,6 +205,7 @@ model Department {
 model Project {
   id           String  @id @default(uuid())
   name         String
+  color        String  @default("#3b82f6")
   description  String?
   orgId        String?
   departmentId String?
@@ -301,7 +302,7 @@ model Task {
   type        TaskType   @default(MICRO)
   status      TaskStatus @default(TODO)
   priority    Priority   @default(MEDIUM)
-  dueDate     DateTime?
+  dueDate     DateTime?  @default(now())
   repeat      RepeatType @default(NONE)
   completedAt DateTime?
 

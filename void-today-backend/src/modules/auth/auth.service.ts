@@ -147,8 +147,17 @@ export class AuthService {
 
     const hashedRefreshToken = await argon2.hash(refreshTokenString);
 
-    await this.prisma.token.create({
-      data: {
+    await this.prisma.token.upsert({
+      where: {
+        userId_userAgent: {
+          userId,
+          userAgent,
+        },
+      },
+      update: {
+        token: hashedRefreshToken,
+      },
+      create: {
         token: hashedRefreshToken,
         userId,
         userAgent,

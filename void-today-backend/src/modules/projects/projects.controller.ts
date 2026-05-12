@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 
 import { ProjectsService } from '@modules/projects/projects.service';
@@ -16,8 +17,10 @@ import { CreateProjectDto } from '@modules/projects/dtos/create-project.dto';
 import { UpdateProjectDto } from '@modules/projects/dtos/update-project.dto';
 import { AddMemberDto } from '@modules/projects/dtos/add-member.dto';
 import { UpdateMemberRoleDto } from '@modules/projects/dtos/update-member-role.dto';
+import { JwtGuard } from '@modules/auth/guards/jwt.guard';
 
 @Controller('projects')
+@UseGuards(JwtGuard)
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 

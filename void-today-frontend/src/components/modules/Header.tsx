@@ -1,13 +1,16 @@
-import {useState} from "react";
+import {useRef, useState} from "react";
 import AuthModal from "./AuthModal.tsx";
+import {useAppSelector} from "../../store/hooks.ts";
+import ProfileModal from "./ProfileModal.tsx";
 
 const Header = () => {
+    const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-    const isAuthenticated = false;
-    const userEmail  = 'user@gmail.com';
+    const avatarButtonRef = useRef<HTMLButtonElement>(null);
 
     return (
         <>
@@ -16,14 +19,17 @@ const Header = () => {
                   <div className='header__left'>
                       {isAuthenticated
                           ? (
-                              <button
-                                  className='header__account-btn'
-                                  onClick={() => setIsProfileModalOpen(true)}
-                              >
-                                  <div className='header__account-avatar'>
-                                      {userEmail[0].toUpperCase()}
-                                  </div>
-                              </button>
+                                  <button
+                                      ref={avatarButtonRef}
+                                      className='header__account-btn'
+                                      onClick={() => setIsProfileModalOpen(true)}
+                                  >
+                                      <div className='header__account-avatar'>
+                                          {user?.email[0].toUpperCase()}
+                                      </div>
+                                  </button>
+
+
                           )
                           : (
                               <button
@@ -34,6 +40,14 @@ const Header = () => {
                               </button>
                           )
                       }
+
+                      {user && (
+                          <ProfileModal
+                              isOpen={isProfileModalOpen}
+                              onClose={() => setIsProfileModalOpen(false)}
+                              anchorRef={avatarButtonRef}
+                          />
+                      )}
                   </div>
 
                     {isAuthenticated && (
@@ -72,7 +86,9 @@ const Header = () => {
                 </div>
             </header>
 
-            {<AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />}
+            <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+
+
         </>
     );
 };

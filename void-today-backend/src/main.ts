@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import cookieParser from "cookie-parser";
+import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
-import {EnvService} from "@core/env/env.service";
-import {ConfigModule} from "@nestjs/config";
-import {ZodValidationPipe} from "nestjs-zod";
+import { EnvService } from '@core/env/env.service';
+import { ConfigModule } from '@nestjs/config';
+import { ZodValidationPipe } from 'nestjs-zod';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,7 +14,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: '*',
+    origin: 'http://localhost:5173',
     credentials: true,
   });
 
