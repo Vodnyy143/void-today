@@ -21,11 +21,10 @@ const EventsSection = () => {
     const [isTaskListOpen, setIsTaskListOpen] = useState(false);
     const [activeTask, setActiveTask] = useState<any>(null);
 
-    // Настройка сенсоров для drag & drop
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8, // Начинать перетаскивание после движения на 8px
+                distance: 8,
             },
         })
     );
@@ -159,16 +158,19 @@ const EventsSection = () => {
                     </div>
 
                     <div className='events-section__timeline'>
-                        <div className='events-section__time-labels'>
-                            {hours.map(hour => (
-                                <div key={hour} className='events-section__time-label'>
-                                    {String(hour).padStart(2, '0')}:00
-                                </div>
-                            ))}
-                        </div>
+
 
                         <div className='events-section__schedule'>
                             <div className='events-section__columns'>
+                                <div className='events-section__time-col'>
+                                    <div className='events-section__column-header' />
+                                    {hours.map(hour => (
+                                        <div key={hour} className='events-section__time-label'>
+                                            {String(hour).padStart(2, '0')}:00
+                                        </div>
+                                    ))}
+                                </div>
+
                                 <ScheduledColumn
                                     hours={hours}
                                     getTasksForHour={getTasksForHour}

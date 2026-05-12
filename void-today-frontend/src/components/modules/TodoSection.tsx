@@ -152,7 +152,7 @@ const TodoSection = () => {
             return [
                 { label: 'High Priority', key: 'HIGH', tasks: groups.HIGH, time: '0m' },
                 { label: 'Medium Priority', key: 'MEDIUM', tasks: groups.MEDIUM, time: '0m' },
-                { label: 'No Priority', key: 'LOW', tasks: groups.LOW, time: '0m' },
+                { label: 'Low Priority', key: 'LOW', tasks: groups.LOW, time: '0m' },
             ].filter(g => g.tasks.length > 0);
 
         } else if (sortMode === 'project') {
@@ -210,7 +210,7 @@ const TodoSection = () => {
                 <button
                     className='todo-card__checkbox'
                     onClick={(e) => {
-                        e.stopPropagation(); // Предотвращаем открытие детального окна
+                        e.stopPropagation();
                         handleToggleTask(task.id);
                     }}
                 >
@@ -238,11 +238,6 @@ const TodoSection = () => {
                         </span>
                         )}
                     </div>
-                    {task.priority !== 'MEDIUM' && (
-                        <span className={`todo-card__priority todo-card__priority--${task.priority.toLowerCase()}`}>
-                        {task.priority}
-                    </span>
-                    )}
                 </div>
 
                 <button

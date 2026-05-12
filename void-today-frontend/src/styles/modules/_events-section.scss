@@ -7,9 +7,11 @@
   flex: 1;
   padding: 32px 24px;
   background: var(--bg-primary);
-  min-height: calc(100vh - 60px);
+  height: calc(100vh - 60px);   // min-height → height
   color: var(--text-primary);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 
 
   &__header {
@@ -42,7 +44,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: var(--bg-modal);
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-md);
     color: var(--text-secondary);
@@ -70,12 +72,12 @@
   }
 
   &__add-btn {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-primary);
+    background: var(--bg-modal);
     border: none;
     border-radius: var(--radius-md);
     color: white;
@@ -84,7 +86,6 @@
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(253, 85, 83, 0.4);
     }
   }
 
@@ -107,12 +108,18 @@
   &__timeline {
     display: flex;
     gap: 16px;
+    flex: 1;
+    min-height: 0;
   }
 
-  &__time-labels {
+  &__time-col {
     display: flex;
     flex-direction: column;
-    padding-top: 40px;
+    background: var(--bg-primary);
+
+    .events-section__column-header {
+      flex-shrink: 0;  // ← не сжимается
+    }
   }
 
   &__time-label {
@@ -126,12 +133,13 @@
 
   &__schedule {
     flex: 1;
+    overflow-y: auto;
     overflow-x: auto;
   }
 
   &__columns {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 52px 1fr 1fr;
     gap: 1px;
     background: var(--border-primary);
     border: 1px solid var(--border-primary);
@@ -155,6 +163,9 @@
     text-align: center;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-primary);
+    height: 44px;        // ← фиксируй высоту явно
+    box-sizing: border-box;
+    flex-shrink: 0;
   }
 
   &__slots {
