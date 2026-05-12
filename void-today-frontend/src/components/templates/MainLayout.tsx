@@ -2,6 +2,7 @@ import type {ReactNode} from "react";
 import Header from "../modules/Header.tsx";
 import Sidebar from "../modules/Sidebar.tsx";
 import {useAppSelector} from "../../store/hooks.ts";
+import TaskDetailSidebar from "../modules/TaskDetailSidebar.tsx";
 
 interface Props {
     children: ReactNode;
@@ -21,6 +22,7 @@ const MainLayout = ({children}: Props) => {
                     {children}
                 </main>
 
+                {isAuthenticated && <TaskDetailSidebar />}
             </div>
         </div>
     );

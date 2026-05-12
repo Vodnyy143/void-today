@@ -4,7 +4,7 @@ import {useSearchParams} from "react-router-dom";
 import {
     clearError,
     createTask,
-    deleteTask,
+    deleteTask, getTask,
     getTasks,
     setFilters,
     toggleTaskStatus
@@ -37,6 +37,17 @@ const TodoSection = () => {
             case 'week': return 'This Week';
             default: return 'Tasks';
         }
+    };
+
+    // Форматирование даты - ТОЛЬКО ЦИФРЫ
+    const formatDueDate = (dueDate: string | undefined) => {
+        if (!dueDate) return null;
+
+        const date = new Date(dueDate);
+        const day = date.getDate();
+        const month = date.toLocaleString('en', { month: 'short' });
+
+        return `${day} ${month}`;
     };
 
     const stats = useMemo(() => {
@@ -124,12 +135,10 @@ const TodoSection = () => {
         dispatch(deleteTask(taskId));
     };
 
-    // Группировка задач - ТОЛЬКО если активна сортировка
     const groupedTasks = useMemo(() => {
         let sorted = [...tasks];
 
         if (sortMode === 'priority') {
-            // Группировка по приоритету
             const groups: Record<string, typeof tasks> = {
                 HIGH: [],
                 MEDIUM: [],
@@ -147,7 +156,6 @@ const TodoSection = () => {
             ].filter(g => g.tasks.length > 0);
 
         } else if (sortMode === 'project') {
-            // Группировка по проектам
             const groups: Record<string, typeof tasks> = {};
             const noProject: typeof tasks = [];
 
@@ -184,9 +192,77 @@ const TodoSection = () => {
             return result;
         }
 
-        // БЕЗ ГРУППИРОВКИ - просто плоский список
         return null;
     }, [tasks, sortMode, projects]);
+
+    const TaskCard = ({ task }: { task: any }) => {
+        const dueDate = formatDueDate(task.dueDate);
+
+        const handleCardClick = () => {
+            dispatch(getTask(task.id));
+        };
+
+        return (
+            <div
+                className={`todo-card ${task.status === 'DONE' ? 'todo-card--done' : ''}`}
+                onClick={handleCardClick}
+            >
+                <button
+                    className='todo-card__checkbox'
+                    onClick={(e) => {
+                        e.stopPropagation(); // Предотвращаем открытие детального окна
+                        handleToggleTask(task.id);
+                    }}
+                >
+                    {task.status === 'DONE' && (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M5 13l4 4L19 7"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"/>
+                        </svg>
+                    )}
+                </button>
+
+                <div className='todo-card__content'>
+                    <div className='todo-card__header'>
+                        <p className='todo-card__title'>{task.title}</p>
+                        {dueDate && (
+                            <span className='todo-card__date'>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+                                <path d="M3 10h18M8 2v4m8-4v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            </svg>
+                                {dueDate}
+                        </span>
+                        )}
+                    </div>
+                    {task.priority !== 'MEDIUM' && (
+                        <span className={`todo-card__priority todo-card__priority--${task.priority.toLowerCase()}`}>
+                        {task.priority}
+                    </span>
+                    )}
+                </div>
+
+                <button
+                    className='todo-card__delete'
+                    onClick={(e) => {
+                        e.stopPropagation(); // Предотвращаем открытие детального окна
+                        handleDeleteTask(task.id);
+                    }}
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        );
+    };
 
     return (
         <section className='todo-section'>
@@ -277,105 +353,22 @@ const TodoSection = () => {
                         <p>No tasks yet. Add your first task above!</p>
                     </div>
                 ) : groupedTasks ? (
-                    // С ГРУППИРОВКОЙ (когда sortMode активен)
                     groupedTasks.map((group) => (
                         <div key={group.key} className='todo-section__group'>
                             <div className='todo-section__group-header'>
                                 <h3 className='todo-section__group-title'>{group.label}</h3>
                                 <span className='todo-section__group-time'>{group.time}</span>
                             </div>
-
                             <div className='todo-section__group-tasks'>
                                 {group.tasks.map((task) => (
-                                    <div
-                                        key={task.id}
-                                        className={`todo-card ${task.status === 'DONE' ? 'todo-card--done' : ''}`}
-                                    >
-                                        <button
-                                            className='todo-card__checkbox'
-                                            onClick={() => handleToggleTask(task.id)}
-                                        >
-                                            {task.status === 'DONE' && (
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M5 13l4 4L19 7"
-                                                          stroke="currentColor"
-                                                          strokeWidth="3"
-                                                          strokeLinecap="round"
-                                                          strokeLinejoin="round"/>
-                                                </svg>
-                                            )}
-                                        </button>
-
-                                        <div className='todo-card__content'>
-                                            <p className='todo-card__title'>{task.title}</p>
-                                            {task.priority !== 'MEDIUM' && (
-                                                <span className={`todo-card__priority todo-card__priority--${task.priority.toLowerCase()}`}>
-                                                    {task.priority}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        <button
-                                            className='todo-card__delete'
-                                            onClick={() => handleDeleteTask(task.id)}
-                                        >
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
-                                                      stroke="currentColor"
-                                                      strokeWidth="2"
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"/>
-                                            </svg>
-                                        </button>
-                                    </div>
+                                    <TaskCard key={task.id} task={task} />
                                 ))}
                             </div>
                         </div>
                     ))
                 ) : (
-                    // БЕЗ ГРУППИРОВКИ (когда sortMode === 'none')
                     tasks.map((task) => (
-                        <div
-                            key={task.id}
-                            className={`todo-card ${task.status === 'DONE' ? 'todo-card--done' : ''}`}
-                        >
-                            <button
-                                className='todo-card__checkbox'
-                                onClick={() => handleToggleTask(task.id)}
-                            >
-                                {task.status === 'DONE' && (
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 13l4 4L19 7"
-                                              stroke="currentColor"
-                                              strokeWidth="3"
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"/>
-                                    </svg>
-                                )}
-                            </button>
-
-                            <div className='todo-card__content'>
-                                <p className='todo-card__title'>{task.title}</p>
-                                {task.priority !== 'MEDIUM' && (
-                                    <span className={`todo-card__priority todo-card__priority--${task.priority.toLowerCase()}`}>
-                                        {task.priority}
-                                    </span>
-                                )}
-                            </div>
-
-                            <button
-                                className='todo-card__delete'
-                                onClick={() => handleDeleteTask(task.id)}
-                            >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
-                                          stroke="currentColor"
-                                          strokeWidth="2"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"/>
-                                </svg>
-                            </button>
-                        </div>
+                        <TaskCard key={task.id} task={task} />
                     ))
                 )}
             </div>
