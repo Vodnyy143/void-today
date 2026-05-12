@@ -1,0 +1,247 @@
+.events-wrapper {
+  display: flex;
+  height: 100%;
+}
+
+.events-section {
+  flex: 1;
+  padding: 32px 24px;
+  background: var(--bg-primary);
+  min-height: calc(100vh - 60px);
+  color: var(--text-primary);
+  overflow-y: auto;
+
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__title {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__nav-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+  }
+
+  &__date-picker {
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+
+    &::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+  }
+
+  &__add-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(253, 85, 83, 0.4);
+    }
+  }
+
+  &__subtitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 20px;
+  }
+
+  &__day-label {
+    font-weight: 700;
+  }
+
+  &__weekday {
+    color: var(--text-secondary);
+  }
+
+  &__timeline {
+    display: flex;
+    gap: 16px;
+  }
+
+  &__time-labels {
+    display: flex;
+    flex-direction: column;
+    padding-top: 40px;
+  }
+
+  &__time-label {
+    height: 60px;
+    display: flex;
+    align-items: flex-start;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    padding-right: 12px;
+  }
+
+  &__schedule {
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  &__columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  &__column {
+    background: var(--bg-primary);
+
+    &--completed {
+      opacity: 0.7;
+    }
+  }
+
+  &__column-header {
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  &__slots {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__slot {
+    height: 60px;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border-primary);
+    position: relative;
+    transition: background 0.2s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &--over {
+      background: rgba(59, 130, 246, 0.1);
+      border: 2px dashed var(--color-primary);
+    }
+  }
+
+  &__task {
+    margin-bottom: 4px;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    &--dragging {
+      opacity: 0.8;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  &__task-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateX(2px);
+    }
+  }
+
+  &__task-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__task-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__task-duration {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  &__task-play {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+}

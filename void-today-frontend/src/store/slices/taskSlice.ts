@@ -87,12 +87,12 @@ export const createTask = createAsyncThunk(
 export const getTasks = createAsyncThunk(
     'tasks/getAll',
     async (
-        filters?: {
+        filters: {
             view?: 'today' | 'tomorrow' | 'week' | 'all';
             status?: TaskStatus;
             priority?: TaskPriority;
             projectId?: string;
-        },
+        } = {},
         { rejectWithValue }
     ) => {
         try {
@@ -104,7 +104,6 @@ export const getTasks = createAsyncThunk(
     }
 );
 
-// Get Single Task
 export const getTask = createAsyncThunk(
     'tasks/getOne',
     async (taskId: string, { rejectWithValue }) => {
@@ -117,7 +116,6 @@ export const getTask = createAsyncThunk(
     }
 );
 
-// Update Task
 export const updateTask = createAsyncThunk(
     'tasks/update',
     async (
@@ -139,7 +137,6 @@ export const updateTask = createAsyncThunk(
     }
 );
 
-// Toggle Task Status
 export const toggleTaskStatus = createAsyncThunk(
     'tasks/toggleStatus',
     async (taskId: string, { getState, rejectWithValue }) => {
@@ -165,7 +162,6 @@ export const toggleTaskStatus = createAsyncThunk(
     }
 );
 
-// Toggle Checkpoint
 export const toggleCheckpoint = createAsyncThunk(
     'tasks/toggleCheckpoint',
     async (
@@ -181,7 +177,6 @@ export const toggleCheckpoint = createAsyncThunk(
     }
 );
 
-// Delete Task
 export const deleteTask = createAsyncThunk(
     'tasks/delete',
     async (taskId: string, { rejectWithValue }) => {
@@ -194,7 +189,6 @@ export const deleteTask = createAsyncThunk(
     }
 );
 
-// Get Chaos Tasks (все задачи без фильтров)
 export const getChaos = createAsyncThunk(
     'tasks/getChaos',
     async (_, { rejectWithValue }) => {
@@ -233,7 +227,6 @@ const taskSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        // Create Task
         builder
             .addCase(createTask.pending, (state) => {
                 state.isLoading = true;
