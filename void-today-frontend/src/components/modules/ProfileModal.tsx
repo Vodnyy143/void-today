@@ -5,7 +5,7 @@ import {useEffect, useRef} from "react";
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    anchorRef: React.RefObject<HTMLButtonElement>;
+    anchorRef: React.RefObject<HTMLButtonElement | null>;
 }
 
 

@@ -2,6 +2,7 @@ import {useRef, useState} from "react";
 import AuthModal from "./AuthModal.tsx";
 import {useAppSelector} from "../../store/hooks.ts";
 import ProfileModal from "./ProfileModal.tsx";
+import SettingsModal from "./SettingsModal.tsx";
 
 const Header = () => {
     const { isAuthenticated, user } = useAppSelector((state) => state.auth);
@@ -87,6 +88,7 @@ const Header = () => {
 
             <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
 
+            <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
 
         </>
     );

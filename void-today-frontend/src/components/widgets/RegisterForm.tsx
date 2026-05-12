@@ -1,7 +1,6 @@
 import {useNavigate} from "react-router-dom";
 import {useState} from "react";
 
-import {api} from "../../services/api.ts";
 import Input from "../elements/Input.tsx";
 import Button from "../elements/Button.tsx";
 import {clearError, signUp} from "../../store/slices/authSlice.ts";
