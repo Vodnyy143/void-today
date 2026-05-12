@@ -19,17 +19,19 @@ const Header = () => {
                   <div className='header__left'>
                       {isAuthenticated
                           ? (
-                                  <button
-                                      ref={avatarButtonRef}
-                                      className='header__account-btn'
-                                      onClick={() => setIsProfileModalOpen(true)}
-                                  >
-                                      <div className='header__account-avatar'>
-                                          {user?.email[0].toUpperCase()}
-                                      </div>
-                                  </button>
-
-
+                              <button
+                                  ref={avatarButtonRef}
+                                  className='header__account-btn'
+                                  onClick={() => setIsProfileModalOpen(true)}
+                              >
+                                  <div className='header__account-avatar'>
+                                      {user?.email[0].toUpperCase()}
+                                  </div>
+                                  <span className='header__account-email'>{user?.email}</span>
+                                  <svg className='header__account-arrow' width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                              </button>
                           )
                           : (
                               <button

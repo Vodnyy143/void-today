@@ -21,7 +21,6 @@ const TodoSection = () => {
     const [value, setValue] = useState('');
     const [sortMode, setSortMode] = useState<SortMode>('none');
 
-    // Определяем текущий вид и название
     const currentView = searchParams.get('view') || 'all';
     const currentStatus = searchParams.get('status');
     const currentProjectId = searchParams.get('project');
@@ -31,7 +30,7 @@ const TodoSection = () => {
             const project = projects.find(p => p.id === currentProjectId);
             return project?.name || 'Project';
         }
-        if (currentStatus === 'DONE') return 'Completed'; // Изменено с 'completed' на 'DONE'
+        if (currentStatus === 'DONE') return 'Completed';
         switch (currentView) {
             case 'today': return 'Today';
             case 'tomorrow': return 'Tomorrow';
@@ -64,19 +63,17 @@ const TodoSection = () => {
         }
 
         if (currentStatus) {
-            newFilters.status = currentStatus; // Убрал 'as any' для лучшей типизации
+            newFilters.status = currentStatus;
         }
 
         if (currentProjectId) {
             newFilters.projectId = currentProjectId;
         }
 
-        console.log('Setting filters:', newFilters); // Отладка
         dispatch(setFilters(newFilters));
     }, [currentView, currentStatus, currentProjectId, dispatch]);
 
     useEffect(() => {
-        console.log('Fetching tasks with filters:', filters); // Отладка
         dispatch(getTasks(filters));
     }, [dispatch, filters]);
 
@@ -97,12 +94,12 @@ const TodoSection = () => {
 
         if (currentView === 'today') {
             const today = new Date();
-            today.setHours(23, 59, 59, 999); // Конец сегодняшнего дня
+            today.setHours(23, 59, 59, 999);
             taskData.dueDate = today.toISOString();
         } else if (currentView === 'tomorrow') {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(23, 59, 59, 999); // Конец завтрашнего дня
+            tomorrow.setHours(23, 59, 59, 999);
             taskData.dueDate = tomorrow.toISOString();
         } else if (currentView === 'week') {
             const weekEnd = new Date();
@@ -127,25 +124,69 @@ const TodoSection = () => {
         dispatch(deleteTask(taskId));
     };
 
-    const getSortedTasks = () => {
+    // Группировка задач - ТОЛЬКО если активна сортировка
+    const groupedTasks = useMemo(() => {
         let sorted = [...tasks];
 
         if (sortMode === 'priority') {
-            const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
-            sorted.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-        } else if (sortMode === 'project') {
-            sorted.sort((a, b) => {
-                if (!a.projectId && !b.projectId) return 0;
-                if (!a.projectId) return 1;
-                if (!b.projectId) return -1;
-                return a.projectId.localeCompare(b.projectId);
+            // Группировка по приоритету
+            const groups: Record<string, typeof tasks> = {
+                HIGH: [],
+                MEDIUM: [],
+                LOW: [],
+            };
+
+            sorted.forEach(task => {
+                groups[task.priority].push(task);
             });
+
+            return [
+                { label: 'High Priority', key: 'HIGH', tasks: groups.HIGH, time: '0m' },
+                { label: 'Medium Priority', key: 'MEDIUM', tasks: groups.MEDIUM, time: '0m' },
+                { label: 'No Priority', key: 'LOW', tasks: groups.LOW, time: '0m' },
+            ].filter(g => g.tasks.length > 0);
+
+        } else if (sortMode === 'project') {
+            // Группировка по проектам
+            const groups: Record<string, typeof tasks> = {};
+            const noProject: typeof tasks = [];
+
+            sorted.forEach(task => {
+                if (task.projectId) {
+                    if (!groups[task.projectId]) {
+                        groups[task.projectId] = [];
+                    }
+                    groups[task.projectId].push(task);
+                } else {
+                    noProject.push(task);
+                }
+            });
+
+            const result = Object.entries(groups).map(([projectId, tasks]) => {
+                const project = projects.find(p => p.id === projectId);
+                return {
+                    label: project?.name || 'Unknown Project',
+                    key: projectId,
+                    tasks,
+                    time: '0m',
+                };
+            });
+
+            if (noProject.length > 0) {
+                result.push({
+                    label: 'Tasks',
+                    key: 'no-project',
+                    tasks: noProject,
+                    time: '0m',
+                });
+            }
+
+            return result;
         }
 
-        return sorted;
-    };
-
-    const sortedTasks = getSortedTasks();
+        // БЕЗ ГРУППИРОВКИ - просто плоский список
+        return null;
+    }, [tasks, sortMode, projects]);
 
     return (
         <section className='todo-section'>
@@ -231,12 +272,69 @@ const TodoSection = () => {
             <div className='todo-section__list'>
                 {isLoading && tasks.length === 0 ? (
                     <div className='todo-section__loading'>Loading...</div>
-                ) : sortedTasks.length === 0 ? (
+                ) : tasks.length === 0 ? (
                     <div className='todo-section__empty'>
                         <p>No tasks yet. Add your first task above!</p>
                     </div>
+                ) : groupedTasks ? (
+                    // С ГРУППИРОВКОЙ (когда sortMode активен)
+                    groupedTasks.map((group) => (
+                        <div key={group.key} className='todo-section__group'>
+                            <div className='todo-section__group-header'>
+                                <h3 className='todo-section__group-title'>{group.label}</h3>
+                                <span className='todo-section__group-time'>{group.time}</span>
+                            </div>
+
+                            <div className='todo-section__group-tasks'>
+                                {group.tasks.map((task) => (
+                                    <div
+                                        key={task.id}
+                                        className={`todo-card ${task.status === 'DONE' ? 'todo-card--done' : ''}`}
+                                    >
+                                        <button
+                                            className='todo-card__checkbox'
+                                            onClick={() => handleToggleTask(task.id)}
+                                        >
+                                            {task.status === 'DONE' && (
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                                    <path d="M5 13l4 4L19 7"
+                                                          stroke="currentColor"
+                                                          strokeWidth="3"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"/>
+                                                </svg>
+                                            )}
+                                        </button>
+
+                                        <div className='todo-card__content'>
+                                            <p className='todo-card__title'>{task.title}</p>
+                                            {task.priority !== 'MEDIUM' && (
+                                                <span className={`todo-card__priority todo-card__priority--${task.priority.toLowerCase()}`}>
+                                                    {task.priority}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <button
+                                            className='todo-card__delete'
+                                            onClick={() => handleDeleteTask(task.id)}
+                                        >
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                                                      stroke="currentColor"
+                                                      strokeWidth="2"
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))
                 ) : (
-                    sortedTasks.map((task) => (
+                    // БЕЗ ГРУППИРОВКИ (когда sortMode === 'none')
+                    tasks.map((task) => (
                         <div
                             key={task.id}
                             className={`todo-card ${task.status === 'DONE' ? 'todo-card--done' : ''}`}
