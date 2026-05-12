@@ -1,7 +1,26 @@
 .button {
+  width: 100%;
+  padding: 10px 12px;
   border: none;
-  background: #4f7cff;
-  color: white;
-  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 15px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  font-family: inherit;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  box-shadow:  0 2px 8px rgba(239, 68, 68, 0.3);
+
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  }
+
+  &:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
 }

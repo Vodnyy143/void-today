@@ -1,7 +1,7 @@
 import {useState} from "react";
-import LoginForm from "../../widgets/LoginForm";
-import RegisterForm from "../../widgets/RegisterForm";
 import * as React from "react";
+import LoginForm from "../widgets/LoginForm";
+import RegisterForm from "../widgets/RegisterForm";
 
 interface Props {
     isOpen: boolean;
@@ -30,17 +30,6 @@ const AuthModal = ({isOpen, onClose}: Props) => {
                     </svg>
                 </button>
 
-                <div className='auth-modal__header'>
-                    <h2 className='auth-modal__title'>
-                        {mode === 'login' ? 'Вход в систему' : 'Регистрация'}
-                    </h2>
-                    <p className='auth-modal__subtitle'>
-                        {mode === 'login'
-                            ? 'Введите свои данные для входа'
-                            : 'Создайте аккаунт для начала работы'}
-                    </p>
-                </div>
-
                 {mode === 'login' ? (
                     <LoginForm />
                 ) : (
@@ -50,22 +39,20 @@ const AuthModal = ({isOpen, onClose}: Props) => {
                 <div className='auth-modal__footer'>
                     {mode === 'login' ? (
                         <p className='auth-modal__switch'>
-                            Нет аккаунта?{' '}
                             <button
                                 className='auth-modal__link'
                                 onClick={() => setMode('register')}
                             >
-                                Зарегистироваться
+                                Регистрация
                             </button>
                         </p>
                     ) : (
                         <p className='auth-modal__switch'>
-                            Уже есть аккаунт?{' '}
                             <button
                                 className='auth-modal__link'
                                 onClick={() => setMode('login')}
                             >
-                                Войти
+                                Вход
                             </button>
                         </p>
                     )}

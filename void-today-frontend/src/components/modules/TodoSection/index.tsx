@@ -1,6 +1,6 @@
 import {useState} from "react";
-import Input from "../../elements/Input";
 import Button from "../../elements/Button";
+import Input from "../../elements/Input.tsx";
 
 const TodoSection = () => {
     const [todos, setTodos] = useState<string[]>([
