@@ -70,6 +70,7 @@ export class AuthController {
     @Req() req: Request & { refreshToken?: string },
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log(userId);
     const userAgent = req.get('user-agent') || 'unknown';
     const refreshToken = req.refreshToken!;
 

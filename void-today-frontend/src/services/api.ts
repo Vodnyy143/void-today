@@ -27,32 +27,32 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
+        console.log('interceptor hit', error.response?.status, originalRequest.url);
+
         if (
             error.response?.status === 401 &&
             !originalRequest._retry &&
-            !originalRequest.url?.includes('/auth/')
+            !originalRequest.url?.includes('/auth/refresh') &&
+            !originalRequest.url?.includes('/auth/sign-in') &&
+            !originalRequest.url?.includes('/auth/sign-up')
         ) {
+            console.log('attempting refresh...');
+
             if (isRefreshing) {
-                return new Promise((resolve, reject) => {
-                    failQueue.push({ resolve, reject });
-                })
-                    .then(() => api(originalRequest))
-                    .catch((err) => Promise.reject(err));
+                console.log('already refreshing, queuing...');
+                // ...
             }
 
-            originalRequest._retry = true;
-            isRefreshing = true;
-
             try {
+                console.log('refresh success');
                 await api.post('/auth/refresh');
                 processQueue(null);
                 return api(originalRequest);
             } catch (err) {
+                console.log('refresh failed, redirecting');
                 processQueue(err);
                 window.location.href = '/';
                 return Promise.reject(err);
-            } finally {
-                isRefreshing = false;
             }
         }
 

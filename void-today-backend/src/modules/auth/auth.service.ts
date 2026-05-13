@@ -84,10 +84,15 @@ export class AuthService {
 
   async refreshTokens(userId: string, refreshToken: string, userAgent: string) {
     const tokenRecord = await this.prisma.token.findUnique({
-      where: { token: refreshToken },
+      where: {
+        userId_userAgent: {
+          userId,
+          userAgent,
+        },
+      },
     });
 
-    if (!tokenRecord || tokenRecord.userId !== userId) {
+    if (tokenRecord?.token !== refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
