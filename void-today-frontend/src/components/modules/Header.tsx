@@ -3,6 +3,7 @@ import AuthModal from "./AuthModal.tsx";
 import {useAppSelector} from "../../store/hooks.ts";
 import ProfileModal from "./ProfileModal.tsx";
 import SettingsModal from "./SettingsModal.tsx";
+import ReportModal from "./ReportModal.tsx";
 
 const Header = () => {
     const { isAuthenticated, user } = useAppSelector((state) => state.auth);
@@ -11,6 +12,7 @@ const Header = () => {
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [settingsInitialTab, setSettingsInitialTab] = useState<'account' | 'premium' | 'general' | 'appearance' | 'about'>('account');
+    const [isReportOpen, setIsReportOpen] = useState(false);
 
     const avatarButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -73,6 +75,16 @@ const Header = () => {
                                 </svg>
                             </button>
 
+                            <button
+                                className='header__icon-btn'
+                                title="Отчёт"
+                                onClick={() => setIsReportOpen(true)}
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </button>
+
                             <button className='header__icon-btn' title="Уведомления">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -97,6 +109,8 @@ const Header = () => {
             </header>
 
             <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+
+            <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
 
             <SettingsModal
                 isOpen={isSettingsModalOpen}
