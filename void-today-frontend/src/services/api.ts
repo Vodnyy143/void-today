@@ -27,32 +27,37 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        console.log('interceptor hit', error.response?.status, originalRequest.url);
+        const isAuthUrl =
+            originalRequest.url?.includes('/auth/refresh') ||
+            originalRequest.url?.includes('/auth/sign-in') ||
+            originalRequest.url?.includes('/auth/sign-up') ||
+            originalRequest.url?.includes('/auth/me');
 
         if (
             error.response?.status === 401 &&
             !originalRequest._retry &&
-            !originalRequest.url?.includes('/auth/refresh') &&
-            !originalRequest.url?.includes('/auth/sign-in') &&
-            !originalRequest.url?.includes('/auth/sign-up')
+            !isAuthUrl
         ) {
-            console.log('attempting refresh...');
-
             if (isRefreshing) {
-                console.log('already refreshing, queuing...');
-                // ...
+                return new Promise((resolve, reject) => {
+                    failQueue.push({ resolve, reject });
+                })
+                    .then(() => api(originalRequest))
+                    .catch((err) => Promise.reject(err));
             }
 
+            originalRequest._retry = true;  // ← помечаем что уже пробовали
+            isRefreshing = true;
+
             try {
-                console.log('refresh success');
                 await api.post('/auth/refresh');
                 processQueue(null);
                 return api(originalRequest);
             } catch (err) {
-                console.log('refresh failed, redirecting');
                 processQueue(err);
-                window.location.href = '/';
                 return Promise.reject(err);
+            } finally {
+                isRefreshing = false;  // ← сбрасываем флаг
             }
         }
 
