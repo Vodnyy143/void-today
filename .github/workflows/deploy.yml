@@ -19,5 +19,8 @@ jobs:
           script: |
             cd /var/www/void-today
             git pull
-            docker compose up -d --build
+            docker compose build frontend backend
+            docker compose up -d frontend backend
+            sleep 10
+            docker compose restart nginx
             docker image prune -f

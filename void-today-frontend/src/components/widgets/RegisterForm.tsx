@@ -81,7 +81,7 @@ const RegisterForm = ({ onSuccess }: Props) => {
 
                 <Input
                     type='password'
-                    placeholder='Password'
+                    placeholder='Пароль'
                     value={password}
                     onChange={(e) => {
                         setPassword(e.target.value);
