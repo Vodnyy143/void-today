@@ -28,9 +28,6 @@ const ReportModal = ({ isOpen, onClose }: Props) => {
 
     if (!isOpen) return null;
 
-    const DAYS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
-
-    // Генерируем тепловую карту за 90 дней
     const getHeatmapColor = (count: number) => {
         if (count === 0) return 'var(--bg-tertiary)';
         if (count <= 2) return 'rgba(59, 130, 246, 0.3)';
