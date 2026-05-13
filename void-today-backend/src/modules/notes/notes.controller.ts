@@ -9,13 +9,16 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { NotesService } from '@modules/notes/notes.service';
 import { GetUserId } from '@common/decorators/get-user.decorator';
 import { CreateNoteDto } from '@modules/notes/dtos/create-note.dto';
 import { GetNotesQueryDto } from '@modules/notes/dtos/get-notes-query.dto';
 import { UpdateNoteDto } from '@modules/notes/dtos/update-note.dto';
+import { JwtGuard } from '@modules/auth/guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('notes')
 export class NotesController {
   constructor(private readonly notesService: NotesService) {}

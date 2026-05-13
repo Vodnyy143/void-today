@@ -1,22 +1,55 @@
-import {useAppSelector} from "../../store/hooks.ts";
+import {useAppDispatch, useAppSelector} from "../../store/hooks.ts";
 import {useEffect, useRef, useState} from "react";
+import {fetchSubscription, upgradePlan} from "../../store/slices/subscriptionSlice.ts";
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
+    initialTab?: Tab;
 }
-type Tab = 'account' | 'general' | 'appearance' | 'about';
+
+type Tab = 'account' | 'premium' | 'general' | 'appearance' | 'about';
+
 const TABS: { id: Tab; label: string; icon: string }[] = [
     { id: 'account', label: 'Учётная запись', icon: 'ti-user' },
+    { id: 'premium', label: 'Премиум', icon: 'ti-crown' },
     { id: 'general', label: 'Общие', icon: 'ti-adjustments-horizontal' },
     { id: 'appearance', label: 'Оформление', icon: 'ti-palette' },
     { id: 'about', label: 'Сведения', icon: 'ti-info-circle' },
 ];
 
-const SettingsModal = ({isOpen, onClose}: Props) => {
+const PRO_FEATURES = [
+    'Создание организаций и команд',
+    'Назначение задач участникам',
+    'Неограниченное количество проектов',
+    'Совместная работа над проектами',
+    'Расширенная статистика',
+    'Повторяющиеся задачи',
+];
+
+const BUSINESS_FEATURES = [
+    'Всё из PRO',
+    'Создание отделов внутри организации',
+    'Управление ролями и правами',
+    'Приоритетная поддержка',
+    'Аналитика по команде',
+    'Кастомные интеграции',
+];
+
+
+const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
+    const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.auth);
-    const [activeTab, setActiveTab] = useState<Tab>('account');
+    const { subscription } = useAppSelector((state) => state.subscriptions);
+    const [activeTab, setActiveTab] = useState<Tab>(initialTab);
     const overlayRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isOpen) {
+            setActiveTab(initialTab);
+            dispatch(fetchSubscription());
+        }
+    }, [isOpen, initialTab, dispatch]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -27,7 +60,13 @@ const SettingsModal = ({isOpen, onClose}: Props) => {
         return () => document.removeEventListener('keydown', handleKey);
     }, [isOpen, onClose]);
 
+    const handleUpgrade = async (plan: 'PRO' | 'BUSINESS') => {
+        await dispatch(upgradePlan(plan));
+    };
+
     if (!isOpen) return null;
+
+    const currentPlan = subscription?.plan ?? 'FREE';
 
     return (
         <div
@@ -74,6 +113,67 @@ const SettingsModal = ({isOpen, onClose}: Props) => {
                                     <button className='settings-modal__btn settings-modal__btn--danger'>
                                         Удалить аккаунт
                                     </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'premium' && (
+                            <div className='settings-modal__premium'>
+                                <div className='settings-modal__plan-badge'>
+                                    Текущий план: <strong>{currentPlan}</strong>
+                                </div>
+
+                                <div className='settings-modal__plans'>
+                                    {/* PRO */}
+                                    <div className={`settings-modal__plan ${currentPlan === 'PRO' ? 'settings-modal__plan--active' : ''}`}>
+                                        <div className='settings-modal__plan-header'>
+                                            <span className='settings-modal__plan-name'>PRO</span>
+                                            <span className='settings-modal__plan-price'>$9.99<span>/мес</span></span>
+                                        </div>
+                                        <ul className='settings-modal__plan-features'>
+                                            {PRO_FEATURES.map(f => (
+                                                <li key={f}>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M20 6L9 17l-5-5" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    </svg>
+                                                    {f}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <button
+                                            className='settings-modal__plan-btn settings-modal__plan-btn--pro'
+                                            onClick={() => handleUpgrade('PRO')}
+                                            disabled={currentPlan === 'PRO' || currentPlan === 'BUSINESS'}
+                                        >
+                                            {currentPlan === 'PRO' ? 'Текущий план' : currentPlan === 'BUSINESS' ? 'Уже активен' : 'Выбрать PRO'}
+                                        </button>
+                                    </div>
+
+                                    {/* BUSINESS */}
+                                    <div className={`settings-modal__plan settings-modal__plan--featured ${currentPlan === 'BUSINESS' ? 'settings-modal__plan--active' : ''}`}>
+                                        <div className='settings-modal__plan-badge-top'>Популярный</div>
+                                        <div className='settings-modal__plan-header'>
+                                            <span className='settings-modal__plan-name'>BUSINESS</span>
+                                            <span className='settings-modal__plan-price'>$24.99<span>/мес</span></span>
+                                        </div>
+                                        <ul className='settings-modal__plan-features'>
+                                            {BUSINESS_FEATURES.map(f => (
+                                                <li key={f}>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M20 6L9 17l-5-5" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    </svg>
+                                                    {f}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <button
+                                            className='settings-modal__plan-btn settings-modal__plan-btn--business'
+                                            onClick={() => handleUpgrade('BUSINESS')}
+                                            disabled={currentPlan === 'BUSINESS'}
+                                        >
+                                            {currentPlan === 'BUSINESS' ? 'Текущий план' : 'Выбрать BUSINESS'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}

@@ -9,13 +9,16 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { GoalsService } from '@modules/goals/goals.service';
 import { GetUserId } from '@common/decorators/get-user.decorator';
 import { CreateGoalDto } from '@modules/goals/dtos/create-goal.dto';
 import { GetGoalsQueryDto } from '@modules/goals/dtos/get-goals-query.dto';
 import { UpdateGoalDto } from '@modules/goals/dtos/update-goal.dto';
+import { JwtGuard } from '@modules/auth/guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('goals')
 export class GoalsController {
   constructor(private readonly goalsService: GoalsService) {}

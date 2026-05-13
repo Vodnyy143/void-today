@@ -6,11 +6,14 @@ import {
   HttpCode,
   HttpStatus,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
 import { SubscriptionsService } from '@modules/subscriptions/subscriptions.service';
 import { GetUserId } from '@common/decorators/get-user.decorator';
 import { UpgradeSubscriptionDto } from '@modules/subscriptions/dtos/upgrade-subscription.dto';
+import { JwtGuard } from '@modules/auth/guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('subscriptions')
 export class SubscriptionController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}

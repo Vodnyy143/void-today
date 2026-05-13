@@ -10,6 +10,7 @@ const Header = () => {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+    const [settingsInitialTab, setSettingsInitialTab] = useState<'account' | 'premium' | 'general' | 'appearance' | 'about'>('account');
 
     const avatarButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -55,7 +56,14 @@ const Header = () => {
 
                     {isAuthenticated && (
                         <div className='header__right'>
-                            <button className='header__icon-btn' title="Премиум">
+                            <button
+                                className='header__icon-btn'
+                                title="Премиум"
+                                onClick={() => {
+                                    setSettingsInitialTab('premium');
+                                    setIsSettingsModalOpen(true);
+                                }}
+                            >
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
                                           stroke="currentColor"
@@ -73,8 +81,10 @@ const Header = () => {
 
                             <button
                                 className='header__icon-btn'
-                                onClick={() => setIsSettingsModalOpen(true)}
-                                title="Настройки"
+                                onClick={() => {
+                                    setSettingsInitialTab('account');
+                                    setIsSettingsModalOpen(true);
+                                }}
                             >
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                     <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
@@ -88,7 +98,11 @@ const Header = () => {
 
             <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
 
-            <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
+            <SettingsModal
+                isOpen={isSettingsModalOpen}
+                onClose={() => setIsSettingsModalOpen(false)}
+                initialTab={settingsInitialTab}
+            />
 
         </>
     );

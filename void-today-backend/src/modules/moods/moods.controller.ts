@@ -6,12 +6,15 @@ import {
   HttpStatus,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
 import { MoodsService } from '@modules/moods/moods.service';
 import { GetUserId } from '@common/decorators/get-user.decorator';
 import { SetMoodDto } from '@modules/moods/dtos/set-mood.dto';
+import { JwtGuard } from '@modules/auth/guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('moods')
 export class MoodsController {
   constructor(private readonly moodsService: MoodsService) {}

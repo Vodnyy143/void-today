@@ -8,12 +8,15 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoriesService } from '@modules/categories/categories.service';
 import { GetUserId } from '@common/decorators/get-user.decorator';
 import { CreateCategoryDto } from '@modules/categories/dtos/create-category.dto';
 import { UpdateCategoryDto } from '@modules/categories/dtos/update-category.dto';
+import { JwtGuard } from '@modules/auth/guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
