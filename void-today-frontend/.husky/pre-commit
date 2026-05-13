@@ -1,0 +1,2 @@
+cd void-today-frontend
+npx lint-staged

@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-frontend:
+    name: Lint Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: void-today-frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: void-today-frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: void-today-frontend
+        run: pnpm lint
+
+      - name: Type check
+        working-directory: void-today-frontend
+        run: tsc --noEmit
+
+  lint-backend:
+    name: Lint Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: void-today-backend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: void-today-backend
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: void-today-backend
+        run: pnpm lint
+
+      - name: Build
+        working-directory: void-today-backend
+        run: pnpm build
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [lint-frontend, lint-backend]  # деплой только если CI прошёл
+    if: github.ref == 'refs/heads/main'   # только для main ветки
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /var/www/void-today
+            git pull
+            docker compose build frontend backend
+            docker compose up -d frontend backend
+            sleep 10
+            docker compose restart nginx
+            docker image prune -f
