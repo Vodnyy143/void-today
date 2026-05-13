@@ -47,14 +47,14 @@ const LoginForm = ({ onSuccess }: Props) => {
 
                 <Input
                     type='email'
-                    placeholder='Email'
+                    placeholder='Почта'
                     value={email}
                     onChange={handleEmailChange}
                 />
 
                 <Input
                     type='password'
-                    placeholder='Password'
+                    placeholder='Пароль'
                     value={password}
                     onChange={handlePasswordChange}
                 />
