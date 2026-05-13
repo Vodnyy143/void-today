@@ -59,7 +59,7 @@ const RegisterForm = ({ onSuccess }: Props) => {
             <div className='register-form__inputs'>
                 <Input
                     type='text'
-                    placeholder='Name'
+                    placeholder='Имя'
                     value={name}
                     onChange={(e) => {
                         setName(e.target.value);
@@ -70,7 +70,7 @@ const RegisterForm = ({ onSuccess }: Props) => {
 
                 <Input
                     type='email'
-                    placeholder='Email address'
+                    placeholder='Почта'
                     value={email}
                     onChange={(e) => {
                         setEmail(e.target.value);
