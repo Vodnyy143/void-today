@@ -3,6 +3,7 @@ import authReducer from './slices/authSlice';
 import taskReducer from './slices/taskSlice';
 import projectReducer from './slices/projectSlice';
 import subscriptionReducer from './slices/subscriptionSlice';
+import organizationReducer from './slices/organizationSlice';
 
 export const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
         tasks: taskReducer,
         projects: projectReducer,
         subscriptions: subscriptionReducer,
+        organizations: organizationReducer,
     },
 });
 

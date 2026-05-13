@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 
 import { OrganizationsService } from '@modules/organizations/organizations.service';
@@ -19,8 +20,11 @@ import { UpdateOrganizationDto } from '@modules/organizations/dtos/update-organi
 import { InviteMemberDto } from '@modules/organizations/dtos/invite-member.dto';
 import { UpdateMemberRoleDto } from '@modules/organizations/dtos/update-member-role.dto';
 import { CreateDepartmentDto } from '@modules/organizations/dtos/create-department.dto';
+import { JwtGuard } from '@modules/auth/guards/jwt.guard';
+import { SubscriptionGuard } from '@modules/subscriptions/guards/subscription.guard';
 
 @Controller('organizations')
+@UseGuards(JwtGuard, SubscriptionGuard)
 export class OrganizationsController {
   constructor(private readonly organizationsService: OrganizationsService) {}
 

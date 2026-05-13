@@ -25,6 +25,12 @@ export interface Task {
     completedAt?: string;
     creatorId: string;
     assigneeId?: string;
+    assignee?: {
+        id: string;
+        name: string | null;
+        email: string;
+        avatar?: string;
+    };
     categoryId?: string;
     goalId?: string;
     projectId?: string;
@@ -58,7 +64,6 @@ const initialState: TaskState = {
     },
 };
 
-// Create Task
 export const createTask = createAsyncThunk(
     'tasks/create',
     async (
@@ -70,6 +75,7 @@ export const createTask = createAsyncThunk(
             dueDate?: string;
             categoryId?: string;
             projectId?: string;
+            assigneeId?: string;  // ← добавь это
             checkpoints?: Array<{ title: string; order: number }>;
         },
         { rejectWithValue }
@@ -83,7 +89,6 @@ export const createTask = createAsyncThunk(
     }
 );
 
-// Get All Tasks
 export const getTasks = createAsyncThunk(
     'tasks/getAll',
     async (

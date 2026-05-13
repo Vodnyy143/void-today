@@ -9,6 +9,8 @@ import {
     setFilters,
     toggleTaskStatus
 } from "../../store/slices/taskSlice.ts";
+import ProjectMembersSidebar from "./ProjectMembersSidebar.tsx";
+import {getProject} from "../../store/slices/projectSlice.ts";
 
 type SortMode = 'project' | 'priority' | 'none';
 
@@ -16,14 +18,23 @@ const TodoSection = () => {
     const dispatch = useAppDispatch();
     const { tasks, isLoading, error, filters } = useAppSelector((state) => state.tasks);
     const { projects } = useAppSelector((state) => state.projects);
+    const [assigneeId, setAssigneeId] = useState('');
+    const { currentProject } = useAppSelector((state) => state.projects);
 
     const [searchParams] = useSearchParams();
     const [value, setValue] = useState('');
     const [sortMode, setSortMode] = useState<SortMode>('none');
+    const [isMembersSidebarOpen, setIsMembersSidebarOpen] = useState(false);
 
     const currentView = searchParams.get('view') || 'all';
     const currentStatus = searchParams.get('status');
     const currentProjectId = searchParams.get('project');
+
+    useEffect(() => {
+        if (currentProjectId) {
+            dispatch(getProject(currentProjectId));
+        }
+    }, [currentProjectId, dispatch]);
 
     const getViewTitle = () => {
         if (currentProjectId) {
@@ -39,7 +50,6 @@ const TodoSection = () => {
         }
     };
 
-    // Форматирование даты - ТОЛЬКО ЦИФРЫ
     const formatDueDate = (dueDate: string | undefined) => {
         if (!dueDate) return null;
 
@@ -95,7 +105,7 @@ const TodoSection = () => {
     }, [error, dispatch]);
 
     const handleAddTask = async () => {
-        if(!value.trim()) return;
+        if (!value.trim()) return;
 
         const taskData: any = {
             title: value,
@@ -123,8 +133,13 @@ const TodoSection = () => {
             taskData.projectId = currentProjectId;
         }
 
+        if (assigneeId) {
+            taskData.assigneeId = assigneeId;
+        }
+
         await dispatch(createTask(taskData));
         setValue('');
+        setAssigneeId('');
     };
 
     const handleToggleTask = (taskId: string) => {
@@ -290,6 +305,18 @@ const TodoSection = () => {
                                   strokeLinejoin="round"/>
                         </svg>
                     </button>
+                    {currentProjectId && (
+                        <button
+                            className={`todo-section__header-btn ${isMembersSidebarOpen ? 'todo-section__header-btn--active' : ''}`}
+                            onClick={() => setIsMembersSidebarOpen(!isMembersSidebarOpen)}
+                            title="Участники проекта"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"
+                                      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -315,10 +342,7 @@ const TodoSection = () => {
             <div className='todo-section__create'>
                 <div className='todo-section__input-wrapper'>
                     <svg className='todo-section__input-icon' width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 5v14m-7-7h14"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"/>
+                        <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
                     <input
                         className='todo-section__input'
@@ -333,6 +357,38 @@ const TodoSection = () => {
                         }}
                         disabled={isLoading}
                     />
+
+                    {/* Исполнитель — показываем только в проекте с участниками */}
+                    {currentProjectId && currentProject?.members && currentProject.members.length > 1 && (
+                        <div className='todo-section__assignee'>
+                            <select
+                                className='todo-section__assignee-select'
+                                value={assigneeId}
+                                onChange={(e) => setAssigneeId(e.target.value)}
+                                title="Исполнитель"
+                            >
+                                <option value=''>Без исполнителя</option>
+                                {currentProject.members.map(member => (
+                                    <option key={member.userId} value={member.userId}>
+                                        {member.user.name || member.user.email}
+                                    </option>
+                                ))}
+                            </select>
+
+                            {/* Аватар выбранного исполнителя */}
+                            {assigneeId && (() => {
+                                const member = currentProject.members?.find(m => m.userId === assigneeId);
+                                return member ? (
+                                    <div className='todo-section__assignee-avatar' title={member.user.name || member.user.email}>
+                                        {member.user.avatar
+                                            ? <img src={member.user.avatar} alt="" />
+                                            : <span>{(member.user.name || member.user.email)[0].toUpperCase()}</span>
+                                        }
+                                    </div>
+                                ) : null;
+                            })()}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -367,6 +423,13 @@ const TodoSection = () => {
                     ))
                 )}
             </div>
+            {currentProjectId && (
+                <ProjectMembersSidebar
+                    isOpen={isMembersSidebarOpen}
+                    onClose={() => setIsMembersSidebarOpen(false)}
+                    projectId={currentProjectId}
+                />
+            )}
         </section>
     );
 };

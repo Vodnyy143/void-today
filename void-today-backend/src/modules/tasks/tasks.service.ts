@@ -28,6 +28,7 @@ export class TasksService {
         categoryId: dto.categoryId,
         goalId: dto.goalId,
         projectId: dto.projectId,
+        assigneeId: dto.assigneeId,
         creatorId: userId,
         checkpoints: dto.checkpoints
           ? {
@@ -52,7 +53,10 @@ export class TasksService {
 
   async findAll(userId: string, query: GetTasksQueryDto) {
     const where: any = {
-      creatorId: userId,
+      OR: [
+        { creatorId: userId },
+        { assigneeId: userId }, // ← добавь
+      ],
     };
 
     if (query.status) {
@@ -68,24 +72,20 @@ export class TasksService {
     }
 
     if (query.view && query.view !== 'all') {
-      // Используем UTC для всех вычислений
       const now = new Date();
 
       if (query.view === 'today') {
-        // Начало и конец сегодняшнего дня в UTC
         where.dueDate = {
           gte: startOfDay(now),
           lte: endOfDay(now),
         };
       } else if (query.view === 'tomorrow') {
-        // Начало и конец завтрашнего дня в UTC
         const tomorrow = addDays(now, 1);
         where.dueDate = {
           gte: startOfDay(tomorrow),
           lte: endOfDay(tomorrow),
         };
       } else if (query.view === 'week') {
-        // От начала сегодня до конца через 7 дней
         const weekEnd = addDays(now, 7);
         where.dueDate = {
           gte: startOfDay(now),
@@ -100,6 +100,8 @@ export class TasksService {
         checkpoints: {
           orderBy: { order: 'asc' },
         },
+        assignee: { select: { id: true, email: true, name: true } },
+        creator: { select: { id: true, email: true, name: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -141,6 +143,8 @@ export class TasksService {
       include: {
         checkpoints: { orderBy: { order: 'asc' } },
         category: true,
+        assignee: { select: { id: true, email: true, name: true } },
+        creator: { select: { id: true, email: true, name: true } },
       },
     });
 

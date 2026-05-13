@@ -27,11 +27,13 @@ export class SubscriptionGuard implements CanActivate {
       PLAN_KEY,
       [context.getHandler(), context.getClass()],
     );
+    console.log(requiredPlan);
 
     if (!requiredPlan) return true;
 
     const request = context.switchToHttp().getRequest();
-    const userId = request.user?.id;
+    const userId = request.user?.userId;
+    console.log(request.user);
 
     if (!userId) throw new ForbiddenException('Unauthorized');
 
@@ -40,9 +42,9 @@ export class SubscriptionGuard implements CanActivate {
 
     const userPlan =
       (subscription?.plan as SubscriptionPlan) ?? SubscriptionPlan.FREE;
-
+    console.log(userPlan);
     const hasAccess = PLAN_HIERARCHY[userPlan] >= PLAN_HIERARCHY[requiredPlan];
-
+    console.log(hasAccess);
     if (!hasAccess) {
       throw new ForbiddenException(
         `Требуется план ${requiredPlan} или выше. Ваш план: ${userPlan}`,

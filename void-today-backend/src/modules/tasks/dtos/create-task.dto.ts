@@ -14,6 +14,7 @@ const createTaskSchema = z.object({
   categoryId: z.string().optional().nullable(),
   goalId: z.string().optional().nullable(),
   projectId: z.string().optional().nullable(),
+  assigneeId: z.string().optional().nullable(),
   checkpoints: z
     .array(
       z.object({

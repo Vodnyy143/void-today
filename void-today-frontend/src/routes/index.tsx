@@ -6,6 +6,8 @@ import PublicRoute from "../components/templates/PublicRoute.tsx";
 import ProtectedRoute from "../components/templates/ProtectedRoute.tsx";
 import TodosPage from "../pages/TodosPage";
 import EventsPage from "../pages/EventsPage.tsx";
+import OrganizationsPage from "../pages/OrganizationsPage.tsx";
+import OrganizationDetailPage from "../pages/OrganizationDetailPage.tsx";
 
 const AppRoutes = () => {
     return (
@@ -34,6 +36,24 @@ const AppRoutes = () => {
                     element={
                         <ProtectedRoute>
                             <EventsPage/>
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/organizations"
+                    element={
+                        <ProtectedRoute>
+                            <OrganizationsPage/>
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/organizations/:id"
+                    element={
+                        <ProtectedRoute>
+                            <OrganizationDetailPage/>
                         </ProtectedRoute>
                     }
                 />

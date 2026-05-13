@@ -107,6 +107,17 @@ const Sidebar = () => {
                     </button>
 
                     <button
+                        className={`sidebar__item ${isActive('/organizations') ? 'sidebar__item--active' : ''}`}
+                        onClick={() => navigate('/organizations')}
+                    >
+                        <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#f59e0b' }}>
+                            <path d="M3 21h18M3 7v14M21 7v14M6 7V5a2 2 0 012-2h8a2 2 0 012 2v2M9 21v-4a3 3 0 016 0v4"
+                                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span className='sidebar__item-text'>Organizations</span>
+                    </button>
+
+                    <button
                         className={`sidebar__item ${isActive('/todos?status=DONE') ? 'sidebar__item--active' : ''}`}
                         onClick={() => navigate('/todos?status=DONE')}
                     >
