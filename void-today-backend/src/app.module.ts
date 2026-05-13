@@ -13,7 +13,7 @@ import { StatsModule } from '@modules/stats/stats.module';
 import { ProjectsModule } from '@modules/projects/projects.module';
 import { UsersModule } from '@modules/users/users.module';
 import { OrganizationsModule } from '@modules/organizations/organizations.module';
-import { DepartmentsModule } from '@modules/departments/departments.module';
+import { SubscriptionsModule } from '@modules/subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -32,7 +32,7 @@ import { DepartmentsModule } from '@modules/departments/departments.module';
     ProjectsModule,
     UsersModule,
     OrganizationsModule,
-    DepartmentsModule,
+    SubscriptionsModule,
   ],
 })
 export class AppModule {}
