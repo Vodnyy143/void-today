@@ -168,11 +168,8 @@
   &:hover &__delete { opacity: 1; }
 }
 
-// ─── OrganizationDetailPage ───────────────────────────────────────────────────
-
 .org-detail {
   padding: 24px;
-  max-width: 860px;
 
   &__loading {
     padding: 60px;
