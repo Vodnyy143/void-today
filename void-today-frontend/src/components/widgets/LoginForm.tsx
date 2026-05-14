@@ -54,7 +54,7 @@ const LoginForm = ({ onSuccess }: Props) => {
 
                 <Input
                     type='password'
-                    placeholder='Пароль'
+                    placeholder='Password'
                     value={password}
                     onChange={handlePasswordChange}
                 />
