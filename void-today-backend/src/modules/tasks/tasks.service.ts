@@ -156,7 +156,7 @@ export class TasksService {
   }
 
   async update(taskId: string, userId: string, dto: UpdateTaskDto) {
-    const task = await this.findOne(taskId, userId);
+    await this.findOne(taskId, userId);
 
     const updatedTask = await this.prisma.task.update({
       where: { id: taskId },
@@ -206,7 +206,7 @@ export class TasksService {
   }
 
   async delete(taskId: string, userId: string) {
-    const task = await this.findOne(taskId, userId);
+    await this.findOne(taskId, userId);
 
     return this.prisma.task.delete({
       where: { id: taskId },
@@ -214,7 +214,7 @@ export class TasksService {
   }
 
   async toggleCheckpoint(taskId: string, checkpointId: string, userId: string) {
-    const task = await this.findOne(taskId, userId);
+    await this.findOne(taskId, userId);
 
     const checkpoint = await this.prisma.checkPoint.findUnique({
       where: { id: checkpointId },

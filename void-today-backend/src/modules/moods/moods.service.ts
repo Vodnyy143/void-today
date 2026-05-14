@@ -106,8 +106,8 @@ export class MoodsService {
     let dominantMood: MoodType = MoodType.OK;
     let maxCount = 0;
     for (const [mood, count] of Object.entries(moodCounts)) {
-      if ((count as number) > maxCount) {
-        maxCount = count as number;
+      if (count > maxCount) {
+        maxCount = count;
         dominantMood = mood as MoodType;
       }
     }

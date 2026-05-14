@@ -63,9 +63,7 @@ export class SubscriptionsService {
       SubscriptionPlan.BUSINESS,
     ];
 
-    const currentIndex = planOrder.indexOf(
-      subscription.plan as SubscriptionPlan,
-    );
+    const currentIndex = planOrder.indexOf(subscription.plan);
 
     const newPlan =
       currentIndex > 0 ? planOrder[currentIndex - 1] : SubscriptionPlan.FREE;
@@ -91,8 +89,7 @@ export class SubscriptionsService {
       [SubscriptionPlan.BUSINESS]: 2,
     };
 
-    const userPlan =
-      (subscription.plan as SubscriptionPlan) ?? SubscriptionPlan.FREE;
+    const userPlan = subscription.plan ?? SubscriptionPlan.FREE;
     return planHierarchy[userPlan] >= planHierarchy[requiredPlan];
   }
 }

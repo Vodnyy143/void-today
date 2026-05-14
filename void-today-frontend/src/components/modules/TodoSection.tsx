@@ -151,7 +151,7 @@ const TodoSection = () => {
     };
 
     const groupedTasks = useMemo(() => {
-        let sorted = [...tasks];
+        const sorted = [...tasks];
 
         if (sortMode === 'priority') {
             const groups: Record<string, typeof tasks> = {

@@ -40,8 +40,7 @@ export class SubscriptionGuard implements CanActivate {
     const subscription =
       await this.subscriptionsService.getSubscription(userId);
 
-    const userPlan =
-      (subscription?.plan as SubscriptionPlan) ?? SubscriptionPlan.FREE;
+    const userPlan = subscription?.plan ?? SubscriptionPlan.FREE;
     console.log(userPlan);
     const hasAccess = PLAN_HIERARCHY[userPlan] >= PLAN_HIERARCHY[requiredPlan];
     console.log(hasAccess);
