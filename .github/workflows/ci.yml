@@ -28,9 +28,7 @@ jobs:
         working-directory: void-today-frontend
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma client   # ← добавить этот шаг
-        working-directory: void-today-backend
-        run: pnpm exec prisma generate
+
 
       - name: Lint
         working-directory: void-today-frontend
@@ -60,6 +58,10 @@ jobs:
       - name: Install dependencies
         working-directory: void-today-backend
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        working-directory: void-today-backend
+        run: pnpm exec prisma generate
 
       - name: Lint
         working-directory: void-today-backend
