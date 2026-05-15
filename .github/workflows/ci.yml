@@ -86,7 +86,10 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /var/www/void-today
+            cp .env.prod /root/.env.prod.backup
+            git checkout -- .env.prod
             git pull
+            cp /root/.env.prod.backup .env.prod
             docker compose build frontend backend
             docker compose up -d frontend backend
             sleep 10

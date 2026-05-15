@@ -42,26 +42,26 @@ const ProfileModal = ({isOpen, onClose, anchorRef }: Props) => {
     return (
         <div className='profile-dropdown' ref={dropdownRef}>
             <div className='profile-dropdown__section'>
-                <p className='profile-dropdown__text'>Last synced: 2 minutes ago</p>
-                <button className='profile-dropdown__link'>Sync Now</button>
+                <p className='profile-dropdown__text'>Последняя синхронизация: 2 минуты назад</p>
+                <button className='profile-dropdown__link'>Синхронизировать</button>
             </div>
 
             <div className='profile-dropdown__section'>
-                <p className='profile-dropdown__text'>Premium period remaining: 0 days</p>
-                <button className='profile-dropdown__link'>Upgrade to Premium</button>
+                <p className='profile-dropdown__text'>Осталось премиум-дней: 0</p>
+                <button className='profile-dropdown__link'>Купить Premium</button>
             </div>
 
             <div className='profile-dropdown__divider'></div>
 
             <div className='profile-dropdown__actions'>
                 <button className='profile-dropdown__action'>
-                    Account Settings
+                    Настройки аккаунта
                 </button>
                 <button
                     className='profile-dropdown__action profile-dropdown__action--logout'
                     onClick={handleLogout}
                 >
-                    Sign Out
+                    Выйти
                 </button>
             </div>
         </div>
