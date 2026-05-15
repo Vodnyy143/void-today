@@ -16,6 +16,7 @@
 @use "./modules/events-section" as *;
 @use "./modules/organizations" as *;
 @use "./modules/report" as *;
+@use "./modules/notifications-panel" as *;
 @use "./templates/layout" as *;
 @use "./pages/home-page" as *;
 @use "./pages/kanban-sprints" as *;
