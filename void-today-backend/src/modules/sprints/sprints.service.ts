@@ -9,15 +9,18 @@ import { SprintStatus, TaskStatus } from '@generated/prisma/enums';
 import { CreateSprintDto } from '@modules/sprints/dtos/create-sprint.dto';
 import { UpdateSprintDto } from '@modules/sprints/dtos/update-sprint.dto';
 import { AddTasksToSprintDto } from '@modules/sprints/dtos/add-tasks.dto';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 
 @Injectable()
 export class SprintsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(userId: string, dto: CreateSprintDto) {
     await this.checkProjectAccess(userId, dto.projectId);
 
-    // Проверяем нет ли уже активного спринта в проекте
     if (dto.startDate && dto.endDate) {
       const activeSprint = await this.prisma.sprint.findFirst({
         where: {
@@ -182,7 +185,7 @@ export class SprintsService {
 
     const now = new Date();
 
-    return this.prisma.sprint.update({
+    const updatedSprint = await this.prisma.sprint.update({
       where: { id: sprintId },
       data: {
         status: SprintStatus.ACTIVE,
@@ -192,6 +195,23 @@ export class SprintsService {
         _count: { select: { tasks: true } },
       },
     });
+
+    const members = await this.prisma.projectMember.findMany({
+      where: { projectId: sprint.projectId },
+      select: { userId: true },
+    });
+    const project = await this.prisma.project.findUnique({
+      where: { id: sprint.projectId },
+      select: { name: true },
+    });
+
+    await this.notificationsService.notifySprintStart(
+      members.map((m) => m.userId),
+      sprint.name,
+      project?.name ?? 'проекте',
+    );
+
+    return updatedSprint;
   }
 
   async complete(userId: string, sprintId: string) {
@@ -212,18 +232,13 @@ export class SprintsService {
     }
 
     const now = new Date();
-
-    // Незавершённые задачи убираем из спринта (переходят в backlog)
     const undoneTasks = sprint.tasks.filter(
       (t) => t.status !== TaskStatus.DONE,
     );
 
     if (undoneTasks.length > 0) {
       await this.prisma.task.updateMany({
-        where: {
-          sprintId,
-          status: { not: TaskStatus.DONE },
-        },
+        where: { sprintId, status: { not: TaskStatus.DONE } },
         data: { sprintId: null },
       });
     }
@@ -235,12 +250,31 @@ export class SprintsService {
         endDate: sprint.endDate ?? now,
       },
       include: {
-        tasks: {
-          select: { id: true, status: true },
-        },
+        tasks: { select: { id: true, status: true } },
         _count: { select: { tasks: true } },
       },
     });
+
+    // ── считаем до отправки уведомления ──
+    const completionRate =
+      sprint.tasks.length > 0
+        ? Math.round(
+            ((sprint.tasks.length - undoneTasks.length) / sprint.tasks.length) *
+              100,
+          )
+        : 0;
+
+    // ── получаем members до отправки уведомления ──
+    const members = await this.prisma.projectMember.findMany({
+      where: { projectId: sprint.projectId },
+      select: { userId: true },
+    });
+
+    await this.notificationsService.notifySprintEnd(
+      members.map((m) => m.userId),
+      sprint.name,
+      completionRate,
+    );
 
     return {
       sprint: completed,
@@ -249,14 +283,7 @@ export class SprintsService {
         completedTasks: sprint.tasks.filter((t) => t.status === TaskStatus.DONE)
           .length,
         movedToBacklog: undoneTasks.length,
-        completionRate:
-          sprint.tasks.length > 0
-            ? Math.round(
-                ((sprint.tasks.length - undoneTasks.length) /
-                  sprint.tasks.length) *
-                  100,
-              )
-            : 0,
+        completionRate,
       },
     };
   }

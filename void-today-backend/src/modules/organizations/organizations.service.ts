@@ -9,10 +9,14 @@ import { UpdateOrganizationDto } from '@modules/organizations/dtos/update-organi
 import { InviteMemberDto } from '@modules/organizations/dtos/invite-member.dto';
 import { UpdateMemberRoleDto } from '@modules/organizations/dtos/update-member-role.dto';
 import { CreateDepartmentDto } from '@modules/organizations/dtos/create-department.dto';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 
 @Injectable()
 export class OrganizationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(userId: string, dto: CreateOrganizationDto) {
     const org = await this.prisma.organization.create({
@@ -97,8 +101,6 @@ export class OrganizationsService {
     });
   }
 
-  // ─── Members ─────────────────────────────────────────────────────
-
   async inviteMember(userId: string, orgId: string, dto: InviteMemberDto) {
     await this.checkRole(userId, orgId, ['OWNER', 'ADMIN']);
 
@@ -113,27 +115,43 @@ export class OrganizationsService {
     }
 
     const existing = await this.prisma.organizationMember.findUnique({
-      where: {
-        userId_orgId: { userId: invitedUser.id, orgId },
-      },
+      where: { userId_orgId: { userId: invitedUser.id, orgId } },
     });
 
     if (existing) {
       throw new ForbiddenException('Пользователь уже является участником');
     }
 
-    return this.prisma.organizationMember.create({
+    const member = await this.prisma.organizationMember.create({
       data: {
         userId: invitedUser.id,
         orgId,
         role: dto.role,
       },
       include: {
-        user: {
-          select: { id: true, email: true, name: true, avatar: true },
-        },
+        user: { select: { id: true, email: true, name: true, avatar: true } },
       },
     });
+
+    // ── получаем org.name и inviter ──────────────────────────────
+    const [org, inviter] = await Promise.all([
+      this.prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { name: true },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true },
+      }),
+    ]);
+
+    await this.notificationsService.notifyInvite(
+      invitedUser.id, // ← было targetUserId (не определён)
+      org?.name ?? 'организацию', // ← было org.name (не определён)
+      inviter?.name ?? inviter?.email ?? 'Кто-то',
+    );
+
+    return member;
   }
 
   async updateMemberRole(

@@ -10,13 +10,17 @@ import { UpdateTaskDto } from '@modules/tasks/dtos/update-task.dto';
 import { GetTasksQueryDto } from '@modules/tasks/dtos/get-tasks-query.dto';
 import { CreateTaskDto } from '@modules/tasks/dtos/create-task.dto';
 import { startOfDay, endOfDay, addDays } from 'date-fns';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(userId: string, dto: CreateTaskDto) {
-    return this.prisma.task.create({
+    const task = await this.prisma.task.create({
       data: {
         title: dto.title,
         description: dto.description,
@@ -49,6 +53,21 @@ export class TasksService {
         creator: { select: { id: true, email: true, name: true } },
       },
     });
+
+    if (dto.assigneeId && dto.assigneeId !== task.assigneeId) {
+      const assigner = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true },
+      });
+
+      await this.notificationsService.notifyTaskAssigned(
+        dto.assigneeId,
+        task.title,
+        assigner?.name ?? assigner?.email ?? 'Кто-то',
+      );
+    }
+
+    return task;
   }
 
   async findAll(userId: string, query: GetTasksQueryDto) {
@@ -200,6 +219,32 @@ export class TasksService {
           },
         });
       }
+    }
+
+    if (dto.assigneeId && dto.assigneeId !== updatedTask.assigneeId) {
+      const assigner = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true },
+      });
+
+      await this.notificationsService.notifyTaskAssigned(
+        dto.assigneeId,
+        updatedTask.title,
+        assigner?.name ?? assigner?.email ?? 'Кто-то',
+      );
+    }
+
+    if (dto.status === TaskStatus.DONE && updatedTask.creatorId !== userId) {
+      const doer = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true },
+      });
+
+      await this.notificationsService.notifyTaskDone(
+        updatedTask.creatorId,
+        updatedTask.title,
+        doer?.name ?? doer?.email ?? 'Кто-то',
+      );
     }
 
     return updatedTask;
