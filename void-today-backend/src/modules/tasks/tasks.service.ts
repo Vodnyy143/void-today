@@ -1,5 +1,9 @@
 import { PrismaService } from '@core/prisma/prisma.service';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   Priority,
   RepeatType,
@@ -71,12 +75,18 @@ export class TasksService {
   }
 
   async findAll(userId: string, query: GetTasksQueryDto) {
-    const where: any = {
-      OR: [
-        { creatorId: userId },
-        { assigneeId: userId }, // ← добавь
-      ],
-    };
+    const where: any = {};
+
+    if (query.projectId) {
+      const member = await this.prisma.projectMember.findUnique({
+        where: { userId_projectId: { userId, projectId: query.projectId } },
+      });
+      if (!member) throw new ForbiddenException('Нет доступа к проекту');
+
+      where.projectId = query.projectId;
+    } else {
+      where.OR = [{ creatorId: userId }, { assigneeId: userId }];
+    }
 
     if (query.status) {
       where.status = query.status;
