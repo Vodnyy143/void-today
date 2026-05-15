@@ -14,6 +14,9 @@ import { ProjectsModule } from '@modules/projects/projects.module';
 import { UsersModule } from '@modules/users/users.module';
 import { OrganizationsModule } from '@modules/organizations/organizations.module';
 import { SubscriptionsModule } from '@modules/subscriptions/subscriptions.module';
+import { KanbanModule } from '@modules/kanban/kanban.module';
+import { SprintsModule } from '@modules/sprints/sprints.module';
+import { NotificationsModule } from '@modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -33,6 +36,9 @@ import { SubscriptionsModule } from '@modules/subscriptions/subscriptions.module
     UsersModule,
     OrganizationsModule,
     SubscriptionsModule,
+    KanbanModule,
+    SprintsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}
