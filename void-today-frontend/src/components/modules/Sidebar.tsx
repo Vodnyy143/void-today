@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {useLocation, useNavigate} from "react-router-dom";
+import {useLocation, useNavigate, useSearchParams} from "react-router-dom";
 import {useAppDispatch, useAppSelector} from "../../store/hooks.ts";
 import {clearError, createProject, getProjects} from "../../store/slices/projectSlice.ts";
 import CreateProjectModal from "./CreateProjectModal.tsx";
@@ -12,6 +12,9 @@ const Sidebar = () => {
     const { projects, isLoading, error } = useAppSelector((state) => state.projects);
     const [searchQuery, setSearchQuery] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    const [searchParams] = useSearchParams();
+    const currentProjectId = searchParams.get('project') ?? projects[0]?.id ?? '';
 
     useEffect(() => {
         dispatch(getProjects());
@@ -115,6 +118,28 @@ const Sidebar = () => {
                                   stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                         <span className='sidebar__item-text'>Organizations</span>
+                    </button>
+
+                    <button
+                        className={`sidebar__item ${isActive('/kanban') ? 'sidebar__item--active' : ''}`}
+                        onClick={() => navigate(`/kanban?project=${currentProjectId}`)}
+                    >
+                        <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#06b6d4' }}>
+                            <rect x="3" y="3" width="5" height="18" rx="1" stroke="currentColor" strokeWidth="2"/>
+                            <rect x="10" y="3" width="5" height="12" rx="1" stroke="currentColor" strokeWidth="2"/>
+                            <rect x="17" y="3" width="5" height="15" rx="1" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                        <span className='sidebar__item-text'>Kanban</span>
+                    </button>
+
+                    <button
+                        className={`sidebar__item ${isActive('/sprints') ? 'sidebar__item--active' : ''}`}
+                        onClick={() => navigate(`/sprints?project=${currentProjectId}`)}
+                    >
+                        <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#f97316' }}>
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                        <span className='sidebar__item-text'>Sprints</span>
                     </button>
 
                     <button

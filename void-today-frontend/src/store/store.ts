@@ -5,6 +5,8 @@ import projectReducer from './slices/projectSlice';
 import subscriptionReducer from './slices/subscriptionSlice';
 import organizationReducer from './slices/organizationSlice';
 import statsReducer from './slices/statsSlice';
+import kanbanReducer from './slices/kanbanSlice';
+import sprintsReducer from './slices/sprintsSlice';
 
 export const store = configureStore({
     reducer: {
@@ -14,6 +16,8 @@ export const store = configureStore({
         subscriptions: subscriptionReducer,
         organizations: organizationReducer,
         stats: statsReducer,
+        kanban: kanbanReducer,
+        sprints: sprintsReducer,
     },
 });
 

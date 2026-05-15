@@ -8,6 +8,8 @@ import TodosPage from "../pages/TodosPage";
 import EventsPage from "../pages/EventsPage.tsx";
 import OrganizationsPage from "../pages/OrganizationsPage.tsx";
 import OrganizationDetailPage from "../pages/OrganizationDetailPage.tsx";
+import KanbanPage from "../pages/KanbanPage.tsx";
+import SprintsPage from "../pages/SprintsPage.tsx";
 
 const AppRoutes = () => {
     return (
@@ -54,6 +56,24 @@ const AppRoutes = () => {
                     element={
                         <ProtectedRoute>
                             <OrganizationDetailPage/>
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/kanban"
+                    element={
+                        <ProtectedRoute>
+                            <KanbanPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/sprints"
+                    element={
+                        <ProtectedRoute>
+                            <SprintsPage />
                         </ProtectedRoute>
                     }
                 />

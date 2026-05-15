@@ -18,6 +18,7 @@
 @use "./modules/report" as *;
 @use "./templates/layout" as *;
 @use "./pages/home-page" as *;
+@use "./pages/kanban-sprints" as *;
 
 body {
   background: white;
