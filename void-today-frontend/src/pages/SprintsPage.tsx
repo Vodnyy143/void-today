@@ -242,7 +242,13 @@ const SprintsPage = () => {
 
     const toggleBacklogTask = (taskId: string) => {
         const next = new Set(selectedBacklogTasks);
-        next.has(taskId) ? next.delete(taskId) : next.add(taskId);
+
+        if (next.has(taskId)) {
+            next.delete(taskId);
+        } else {
+            next.add(taskId);
+        }
+
         setSelectedBacklogTasks(next);
     };
 
