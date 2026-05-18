@@ -1,5 +1,11 @@
 import {useAppDispatch, useAppSelector} from "../../store/hooks.ts";
-import {clearCurrentTask, updateTask} from "../../store/slices/taskSlice.ts";
+import {
+    addCheckpoint,
+    clearCurrentTask,
+    deleteCheckpoint, type RepeatType,
+    toggleCheckpoint,
+    updateTask
+} from "../../store/slices/taskSlice.ts";
 import {useEffect, useRef, useState} from "react";
 
 const PRIORITIES: { value: 'LOW' | 'MEDIUM' | 'HIGH' | undefined, label: string, color: string }[] = [
@@ -8,11 +14,22 @@ const PRIORITIES: { value: 'LOW' | 'MEDIUM' | 'HIGH' | undefined, label: string,
     { value: 'HIGH', label: 'Высокий приоритет', color: '#ef4444' },
 ];
 
+const REPEAT_OPTIONS = [
+    { value: 'NONE', label: 'Не повторять' },
+    { value: 'DAILY', label: 'Каждый день' },
+    { value: 'WEEKLY', label: 'Каждую неделю' },
+];
+
 const TaskDetailSidebar = () => {
     const dispatch = useAppDispatch();
     const { currentTask } = useAppSelector((state) => state.tasks);
     const { projects } = useAppSelector((state) => state.projects);
+
     const [isPriorityOpen, setIsPriorityOpen] = useState(false);
+    const [newSubtask, setNewSubtask] = useState('');
+    const [isRepeatOpen, setIsRepeatOpen] = useState(false);
+    const repeatRef = useRef<HTMLDivElement>(null);
+
     const priorityRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -25,6 +42,24 @@ const TaskDetailSidebar = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        const handleClick = (e: MouseEvent) => {
+            if (repeatRef.current && !repeatRef.current.contains(e.target as Node)) {
+                setIsRepeatOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
+    if (!currentTask) return null;
+
+    const handleRepeatChange = (repeat: string) => {
+        dispatch(updateTask({ taskId: currentTask.id, updates: { repeat: repeat as RepeatType } }));
+        setIsRepeatOpen(false);
+    };
+
+    const repeatLabel = REPEAT_OPTIONS.find(r => r.value === currentTask.repeat)?.label ?? 'Не повторять';
 
     if (!currentTask) return null;
 
@@ -55,6 +90,17 @@ const TaskDetailSidebar = () => {
         const day = date.getDate();
         const month = date.toLocaleString('en', { month: 'short' });
         return `Created on ${day} ${month}`;
+    };
+
+    const handleAddSubtask = async () => {
+        if (!newSubtask.trim() || !currentTask) return;
+        await dispatch(addCheckpoint({ taskId: currentTask.id, title: newSubtask.trim() }));
+        setNewSubtask('');
+    };
+
+    const handleDeleteCheckpoint = (checkpointId: string) => {
+        if (!currentTask) return;
+        dispatch(deleteCheckpoint({ taskId: currentTask.id, checkpointId }));
     };
 
     return (
@@ -225,32 +271,79 @@ const TaskDetailSidebar = () => {
                         </div>
                     </div>
 
-                    <div className='task-detail__row'>
+                    <div className='task-detail__row' style={{ position: 'relative' }} ref={repeatRef}>
                         <div className='task-detail__row-icon'>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                                 <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"/>
+                                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                         </div>
-                        <div className='task-detail__row-content'>
+                        <div className='task-detail__row-content' onClick={() => setIsRepeatOpen(!isRepeatOpen)} style={{ cursor: 'pointer' }}>
                             <span className='task-detail__row-label'>Repeat</span>
-                            <span className='task-detail__row-value'>None</span>
+                            <span className={`task-detail__row-value ${currentTask.repeat !== 'NONE' ? 'task-detail__row-value--active' : ''}`}>
+            {repeatLabel}
+        </span>
                         </div>
+                        {isRepeatOpen && (
+                            <div className='task-detail__dropdown'>
+                                {REPEAT_OPTIONS.map(opt => (
+                                    <button
+                                        key={opt.value}
+                                        className='task-detail__dropdown-option'
+                                        onClick={() => handleRepeatChange(opt.value)}
+                                    >
+                                        <span>{opt.label}</span>
+                                        {currentTask.repeat === opt.value && (
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                                <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                                            </svg>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                </div>
 
-                <button className='task-detail__subtask-btn'>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
-                    Add a subtask...
-                </button>
+                    <div className='task-detail__section-label'>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 11l3 3L22 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                        Подзадачи
+                        {currentTask.type === 'MACRO' && (
+                            <span className='task-detail__type-badge'>MACRO</span>
+                        )}
+                    </div>
 
-                <div className='task-detail__note'>
-                    <span className='task-detail__note-placeholder'>Add a note...</span>
+                    {currentTask.checkpoints?.map(cp => (
+                        <div key={cp.id} className='task-detail__subtask'>
+                            <button
+                                className={`task-detail__subtask-check ${cp.done ? 'task-detail__subtask-check--done' : ''}`}
+                                onClick={() => dispatch(toggleCheckpoint({ taskId: currentTask.id, checkpointId: cp.id }))}
+                            >
+                                {cp.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>}
+                            </button>
+                            <span className={cp.done ? 'task-detail__subtask-title--done' : ''}>{cp.title}</span>
+                            <button
+                                className='task-detail__subtask-delete'
+                                onClick={() => handleDeleteCheckpoint(cp.id)}
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    ))}
+
+                    <div className='task-detail__subtask-add'>
+                        <input
+                            placeholder='Добавить подзадачу...'
+                            value={newSubtask}
+                            onChange={e => setNewSubtask(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleAddSubtask()}
+                            className='task-detail__subtask-input'
+                        />
+                    </div>
                 </div>
             </div>
 

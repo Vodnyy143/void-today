@@ -31,6 +31,7 @@ const updateTaskSchema = z.object({
   assigneeId: z.string().optional().nullable(),
   kanbanColumnId: z.string().optional().nullable(),
   sprintId: z.string().optional().nullable(),
+  completedAt: z.string().optional().nullable(),
 });
 
 export class UpdateTaskDto extends createZodDto(updateTaskSchema) {}

@@ -185,7 +185,7 @@ export class TasksService {
   }
 
   async update(taskId: string, userId: string, dto: UpdateTaskDto) {
-    await this.findOne(taskId, userId);
+    const task = await this.findOne(taskId, userId);
 
     const updatedTask = await this.prisma.task.update({
       where: { id: taskId },
@@ -213,6 +213,35 @@ export class TasksService {
         creator: { select: { id: true, email: true, name: true } },
       },
     });
+
+    // ── Повторение задачи при выполнении ──────────────────────────
+    if (
+      dto.status === TaskStatus.DONE &&
+      task.status !== TaskStatus.DONE &&
+      updatedTask.repeat !== RepeatType.NONE
+    ) {
+      const nextDate = this.getNextDueDate(
+        updatedTask.dueDate,
+        updatedTask.repeat,
+      );
+
+      await this.prisma.task.create({
+        data: {
+          title: updatedTask.title,
+          description: updatedTask.description ?? undefined,
+          type: updatedTask.type,
+          status: TaskStatus.TODO,
+          priority: updatedTask.priority,
+          dueDate: nextDate,
+          repeat: updatedTask.repeat,
+          categoryId: updatedTask.categoryId ?? undefined,
+          goalId: updatedTask.goalId ?? undefined,
+          projectId: updatedTask.projectId ?? undefined,
+          assigneeId: updatedTask.assigneeId ?? undefined,
+          creatorId: updatedTask.creatorId,
+        },
+      });
+    }
 
     if (updatedTask.checkpoints.length > 0) {
       const allDone = updatedTask.checkpoints.every((cp) => cp.done);
@@ -299,6 +328,43 @@ export class TasksService {
     return updated;
   }
 
+  async addCheckpoint(taskId: string, userId: string, title: string) {
+    await this.findOne(taskId, userId);
+
+    const checkpoint = await this.prisma.checkPoint.create({
+      data: {
+        taskId,
+        title,
+        order: await this.prisma.checkPoint.count({ where: { taskId } }),
+      },
+    });
+
+    // Меняем тип задачи на MACRO
+    await this.prisma.task.update({
+      where: { id: taskId },
+      data: { type: TaskType.MACRO },
+    });
+
+    return checkpoint;
+  }
+
+  async deleteCheckpoint(taskId: string, checkpointId: string, userId: string) {
+    await this.findOne(taskId, userId);
+
+    await this.prisma.checkPoint.delete({ where: { id: checkpointId } });
+
+    // Если чекпоинтов не осталось — возвращаем MICRO
+    const remaining = await this.prisma.checkPoint.count({ where: { taskId } });
+    if (remaining === 0) {
+      await this.prisma.task.update({
+        where: { id: taskId },
+        data: { type: TaskType.MICRO },
+      });
+    }
+
+    return { success: true };
+  }
+
   async getTasksByProject(projectId: string, userId: string) {
     return this.prisma.task.findMany({
       where: {
@@ -335,5 +401,21 @@ export class TasksService {
         status,
       },
     });
+  }
+
+  private getNextDueDate(
+    currentDueDate: Date | null,
+    repeat: RepeatType,
+  ): Date {
+    const base = currentDueDate ?? new Date();
+    const next = new Date(base);
+
+    if (repeat === RepeatType.DAILY) {
+      next.setDate(next.getDate() + 1);
+    } else if (repeat === RepeatType.WEEKLY) {
+      next.setDate(next.getDate() + 7);
+    }
+
+    return next;
   }
 }

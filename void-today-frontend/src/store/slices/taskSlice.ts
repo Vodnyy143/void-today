@@ -142,6 +142,30 @@ export const updateTask = createAsyncThunk(
     }
 );
 
+export const addCheckpoint = createAsyncThunk(
+    'tasks/addCheckpoint',
+    async ({ taskId, title }: { taskId: string; title: string }, { rejectWithValue }) => {
+        try {
+            const res = await api.post(`/tasks/${taskId}/checkpoints`, { title });
+            return { taskId, checkpoint: res.data };
+        } catch (e: any) {
+            return rejectWithValue(e.response?.data?.message ?? 'Ошибка');
+        }
+    }
+);
+
+export const deleteCheckpoint = createAsyncThunk(
+    'tasks/deleteCheckpoint',
+    async ({ taskId, checkpointId }: { taskId: string; checkpointId: string }, { rejectWithValue }) => {
+        try {
+            await api.delete(`/tasks/${taskId}/checkpoints/${checkpointId}`);
+            return { taskId, checkpointId };
+        } catch (e: any) {
+            return rejectWithValue(e.response?.data?.message ?? 'Ошибка');
+        }
+    }
+);
+
 export const toggleTaskStatus = createAsyncThunk(
     'tasks/toggleStatus',
     async (taskId: string, { getState, rejectWithValue }) => {
@@ -287,6 +311,31 @@ const taskSlice = createSlice({
                 }
             });
 
+        builder.addCase(addCheckpoint.fulfilled, (state, action) => {
+            const task = state.tasks.find(t => t.id === action.payload.taskId);
+            if (task) {
+                task.checkpoints = [...(task.checkpoints ?? []), action.payload.checkpoint];
+                task.type = 'MACRO';
+            }
+            if (state.currentTask?.id === action.payload.taskId) {
+                state.currentTask.checkpoints = [...(state.currentTask.checkpoints ?? []), action.payload.checkpoint];
+                state.currentTask.type = 'MACRO';
+            }
+        });
+
+        builder.addCase(deleteCheckpoint.fulfilled, (state, action) => {
+            const { taskId, checkpointId } = action.payload;
+            const task = state.tasks.find(t => t.id === taskId);
+            if (task?.checkpoints) {
+                task.checkpoints = task.checkpoints.filter(c => c.id !== checkpointId);
+                if (task.checkpoints.length === 0) task.type = 'MICRO';
+            }
+            if (state.currentTask?.id === taskId && state.currentTask.checkpoints) {
+                state.currentTask.checkpoints = state.currentTask.checkpoints.filter(c => c.id !== checkpointId);
+                if (state.currentTask.checkpoints.length === 0) state.currentTask.type = 'MICRO';
+            }
+        });
+
         // Toggle Task Status
         builder
             .addCase(toggleTaskStatus.fulfilled, (state, action: PayloadAction<Task>) => {
@@ -297,16 +346,23 @@ const taskSlice = createSlice({
             });
 
         // Toggle Checkpoint
-        builder
-            .addCase(toggleCheckpoint.fulfilled, (state, action: PayloadAction<Task>) => {
-                const index = state.tasks.findIndex((t) => t.id === action.payload.id);
-                if (index !== -1) {
-                    state.tasks[index] = action.payload;
+        // Toggle Checkpoint — бэкенд возвращает CheckPoint, а не Task
+        builder.addCase(toggleCheckpoint.fulfilled, (state, action) => {
+            const updatedCheckpoint = action.payload; // { id, done, taskId, ... }
+
+            const updateInTask = (task: Task) => {
+                if (task.checkpoints) {
+                    const idx = task.checkpoints.findIndex(c => c.id === updatedCheckpoint.id);
+                    if (idx !== -1) {
+                        task.checkpoints[idx] = { ...task.checkpoints[idx], done: updatedCheckpoint.done };
+                    }
                 }
-                if (state.currentTask?.id === action.payload.id) {
-                    state.currentTask = action.payload;
-                }
-            });
+            };
+
+            const task = state.tasks.find(t => t.id === updatedCheckpoint.taskId);
+            if (task) updateInTask(task);
+            if (state.currentTask?.id === updatedCheckpoint.taskId) updateInTask(state.currentTask);
+        });
 
         // Delete Task
         builder

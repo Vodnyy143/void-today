@@ -40,6 +40,37 @@ export class TasksController {
     return this.tasksService.getChaos(userId);
   }
 
+  // ── Checkpoints — ДО маршрутов с :id ─────────────────────────
+  @Post(':taskId/checkpoints')
+  @HttpCode(HttpStatus.CREATED)
+  addCheckpoint(
+    @GetUserId() userId: string,
+    @Param('taskId') taskId: string,
+    @Body() body: { title: string },
+  ) {
+    return this.tasksService.addCheckpoint(taskId, userId, body.title);
+  }
+
+  @Delete(':taskId/checkpoints/:checkpointId')
+  @HttpCode(HttpStatus.OK)
+  deleteCheckpoint(
+    @GetUserId() userId: string,
+    @Param('taskId') taskId: string,
+    @Param('checkpointId') checkpointId: string,
+  ) {
+    return this.tasksService.deleteCheckpoint(taskId, checkpointId, userId);
+  }
+
+  @Patch(':id/checkpoints/:cpId')
+  async toggleCheckpoint(
+    @Param('id') taskId: string,
+    @Param('cpId') cpId: string,
+    @GetUserId() userId: string,
+  ) {
+    return this.tasksService.toggleCheckpoint(taskId, cpId, userId);
+  }
+  // ─────────────────────────────────────────────────────────────
+
   @Get(':id')
   async findOne(@Param('id') taskId: string, @GetUserId() userId: string) {
     return this.tasksService.findOne(taskId, userId);
@@ -52,15 +83,6 @@ export class TasksController {
     @Body() dto: UpdateTaskDto,
   ) {
     return this.tasksService.update(taskId, userId, dto);
-  }
-
-  @Patch(':id/checkpoints/:cpId')
-  async toggleCheckpoint(
-    @Param('id') taskId: string,
-    @Param('cpId') cpId: string,
-    @GetUserId() userId: string,
-  ) {
-    return this.tasksService.toggleCheckpoint(taskId, cpId, userId);
   }
 
   @Delete(':id')

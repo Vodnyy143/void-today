@@ -13,7 +13,6 @@ datasource db {
   provider = "postgresql"
 }
 
-// ENUMS
 enum SubscriptionPlan {
   FREE
   PRO
@@ -92,8 +91,6 @@ enum NotificationType {
   INVITE
   MENITION
 }
-
-// USER AND AUTH
 
 model User {
   id       String  @id @default(uuid())
