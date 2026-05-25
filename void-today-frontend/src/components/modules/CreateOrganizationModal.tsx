@@ -1,15 +1,16 @@
 import {type FormEvent, useState} from "react";
 import {useAppDispatch} from "../../store/hooks.ts";
 import {createOrganization} from "../../store/slices/organizationSlice.ts";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
 }
 
-
 const CreateOrganizationModal = ({ isOpen, onClose }: Props) => {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -24,7 +25,7 @@ const CreateOrganizationModal = ({ isOpen, onClose }: Props) => {
             setName('');
             onClose();
         } catch (e: any) {
-            setError(typeof e === 'string' ? e : 'Ошибка создания');
+            setError(typeof e === 'string' ? e : t('createOrg.error'));
         } finally {
             setLoading(false);
         }
@@ -36,7 +37,7 @@ const CreateOrganizationModal = ({ isOpen, onClose }: Props) => {
         <div className='create-org-modal-overlay' onClick={(e) => e.target === e.currentTarget && onClose()}>
             <div className='create-org-modal'>
                 <div className='create-org-modal__header'>
-                    <h2 className='create-org-modal__title'>Новая организация</h2>
+                    <h2 className='create-org-modal__title'>{t('createOrg.title')}</h2>
                     <button className='create-org-modal__close' onClick={onClose}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -46,10 +47,10 @@ const CreateOrganizationModal = ({ isOpen, onClose }: Props) => {
 
                 <form className='create-org-modal__body' onSubmit={handleSubmit}>
                     <div className='create-org-modal__field'>
-                        <label className='create-org-modal__label'>Название</label>
+                        <label className='create-org-modal__label'>{t('createOrg.nameLabel')}</label>
                         <input
                             className='create-org-modal__input'
-                            placeholder='Например: Моя компания'
+                            placeholder={t('createOrg.namePlaceholder')}
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             autoFocus
@@ -60,14 +61,14 @@ const CreateOrganizationModal = ({ isOpen, onClose }: Props) => {
 
                     <div className='create-org-modal__footer'>
                         <button type='button' className='create-org-modal__btn create-org-modal__btn--cancel' onClick={onClose}>
-                            Отмена
+                            {t('createOrg.cancel')}
                         </button>
                         <button
                             type='submit'
                             className='create-org-modal__btn create-org-modal__btn--primary'
                             disabled={loading || !name.trim()}
                         >
-                            {loading ? 'Создание...' : 'Создать'}
+                            {loading ? t('createOrg.creating') : t('createOrg.create')}
                         </button>
                     </div>
                 </form>

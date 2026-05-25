@@ -3,11 +3,13 @@ import {useLocation, useNavigate, useSearchParams} from "react-router-dom";
 import {useAppDispatch, useAppSelector} from "../../store/hooks.ts";
 import {clearError, createProject, getProjects} from "../../store/slices/projectSlice.ts";
 import CreateProjectModal from "./CreateProjectModal.tsx";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
 
     const { projects, isLoading, error } = useAppSelector((state) => state.projects);
     const [searchQuery, setSearchQuery] = useState('');
@@ -51,7 +53,7 @@ const Sidebar = () => {
                     </svg>
                     <input
                         className='sidebar__search-input'
-                        placeholder='Поиск'
+                        placeholder={t('sidebar.search')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -66,7 +68,7 @@ const Sidebar = () => {
                             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
                             <path d="m9 12 2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                         </svg>
-                        <span className='sidebar__item-text'>Сегодня</span>
+                        <span className='sidebar__item-text'>{t('sidebar.today')}</span>
                         <span className='sidebar__item-count'>0м</span>
                         <span className='sidebar__item-badge'>4</span>
                     </button>
@@ -78,7 +80,7 @@ const Sidebar = () => {
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#f97316' }}>
                             <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                         </svg>
-                        <span className='sidebar__item-text'>Завтра</span>
+                        <span className='sidebar__item-text'>{t('sidebar.tomorrow')}</span>
                         <span className='sidebar__item-count'>0м</span>
                         <span className='sidebar__item-badge'>0</span>
                     </button>
@@ -91,7 +93,7 @@ const Sidebar = () => {
                             <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
                             <path d="M3 10h18M8 2v4m8-4v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                         </svg>
-                        <span className='sidebar__item-text'>Эта неделя</span>
+                        <span className='sidebar__item-text'>{t('sidebar.thisWeek')}</span>
                         <span className='sidebar__item-count'>0м</span>
                         <span className='sidebar__item-badge'>0</span>
                     </button>
@@ -104,7 +106,7 @@ const Sidebar = () => {
                             <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
                             <path d="M3 10h18M8 2v4m8-4v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                         </svg>
-                        <span className='sidebar__item-text'>События</span>
+                        <span className='sidebar__item-text'>{t('sidebar.events')}</span>
                         <span className='sidebar__item-count'>0м</span>
                         <span className='sidebar__item-badge'>0</span>
                     </button>
@@ -117,7 +119,7 @@ const Sidebar = () => {
                             <path d="M3 21h18M3 7v14M21 7v14M6 7V5a2 2 0 012-2h8a2 2 0 012 2v2M9 21v-4a3 3 0 016 0v4"
                                   stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
-                        <span className='sidebar__item-text'>Организации</span>
+                        <span className='sidebar__item-text'>{t('sidebar.organizations')}</span>
                     </button>
 
                     <button
@@ -129,7 +131,7 @@ const Sidebar = () => {
                             <rect x="10" y="3" width="5" height="12" rx="1" stroke="currentColor" strokeWidth="2"/>
                             <rect x="17" y="3" width="5" height="15" rx="1" stroke="currentColor" strokeWidth="2"/>
                         </svg>
-                        <span className='sidebar__item-text'>Канбан</span>
+                        <span className='sidebar__item-text'>{t('sidebar.kanban')}</span>
                     </button>
 
                     <button
@@ -139,7 +141,7 @@ const Sidebar = () => {
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#f97316' }}>
                             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                         </svg>
-                        <span className='sidebar__item-text'>Спринты</span>
+                        <span className='sidebar__item-text'>{t('sidebar.sprints')}</span>
                     </button>
 
                     <button
@@ -150,7 +152,7 @@ const Sidebar = () => {
                             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
                             <path d="m9 12 2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                         </svg>
-                        <span className='sidebar__item-text'>Выполненные</span>
+                        <span className='sidebar__item-text'>{t('sidebar.completed')}</span>
                     </button>
 
                     <button
@@ -163,7 +165,7 @@ const Sidebar = () => {
                             <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
                             <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
                         </svg>
-                        <span className='sidebar__item-text'>Задачи</span>
+                        <span className='sidebar__item-text'>{t('sidebar.tasks')}</span>
                         <span className='sidebar__item-count'>0м</span>
                         <span className='sidebar__item-badge'>1</span>
                     </button>
@@ -173,9 +175,9 @@ const Sidebar = () => {
 
                 <div className='sidebar__section'>
                     {isLoading ? (
-                        <div className='sidebar__loading'>Загрузка проектов...</div>
+                        <div className='sidebar__loading'>{t('sidebar.loadingProjects')}</div>
                     ) : filteredProjects.length === 0 ? (
-                        <div className='sidebar__empty'>Проекты не найдены</div>
+                        <div className='sidebar__empty'>{t('sidebar.noProjects')}</div>
                     ) : (
                         filteredProjects.map((project) => (
                             <button
@@ -202,7 +204,7 @@ const Sidebar = () => {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                         <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
-                    <span>Добавить проект</span>
+                    <span>{t('sidebar.addProject')}</span>
                 </button>
             </aside>
 

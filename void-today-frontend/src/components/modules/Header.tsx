@@ -6,11 +6,13 @@ import SettingsModal from "./SettingsModal.tsx";
 import ReportModal from "./ReportModal.tsx";
 import NotificationsPanel from "./NotificationsPanel.tsx";
 import {fetchUnreadCount} from "../../store/slices/notificationsSlice.ts";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 const Header = () => {
     const dispatch = useAppDispatch();
     const { isAuthenticated, user } = useAppSelector((state) => state.auth);
     const { unreadCount } = useAppSelector((state) => state.notifications);
+    const { t } = useTranslation();
 
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -60,7 +62,7 @@ const Header = () => {
                                     className='header__auth-link'
                                     onClick={() => setIsAuthOpen(true)}
                                 >
-                                    Войти | Регистрация
+                                    {t('header.loginRegister')}
                                 </button>
                             )
                         }
@@ -78,7 +80,7 @@ const Header = () => {
                         <div className='header__right'>
                             <button
                                 className='header__icon-btn'
-                                title="Премиум"
+                                title={t('header.premium')}
                                 onClick={() => {
                                     setSettingsInitialTab('premium');
                                     setIsSettingsModalOpen(true);
@@ -92,7 +94,7 @@ const Header = () => {
 
                             <button
                                 className='header__icon-btn'
-                                title="Отчёт"
+                                title={t('header.report')}
                                 onClick={() => setIsReportOpen(true)}
                             >
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -104,7 +106,7 @@ const Header = () => {
                             <button
                                 ref={notifButtonRef}
                                 className={`header__icon-btn header__icon-btn--notif ${isNotificationsOpen ? 'header__icon-btn--active' : ''}`}
-                                title="Уведомления"
+                                title={t('header.notifications')}
                                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                             >
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -120,7 +122,7 @@ const Header = () => {
 
                             <button
                                 className='header__icon-btn'
-                                title="Настройки"
+                                title={t('header.settings')}
                                 onClick={() => {
                                     setSettingsInitialTab('account');
                                     setIsSettingsModalOpen(true);

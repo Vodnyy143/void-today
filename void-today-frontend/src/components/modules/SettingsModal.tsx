@@ -1,6 +1,8 @@
 import {useAppDispatch, useAppSelector} from "../../store/hooks.ts";
 import {useEffect, useRef, useState} from "react";
 import {fetchSubscription, upgradePlan} from "../../store/slices/subscriptionSlice.ts";
+import {setTheme, setLanguage, type Theme, type Language} from "../../store/slices/settingsSlice.ts";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 interface Props {
     isOpen: boolean;
@@ -10,37 +12,59 @@ interface Props {
 
 type Tab = 'account' | 'premium' | 'general' | 'appearance' | 'about';
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-    { id: 'account', label: 'Учётная запись', icon: 'ti-user' },
-    { id: 'premium', label: 'Премиум', icon: 'ti-crown' },
-    { id: 'general', label: 'Общие', icon: 'ti-adjustments-horizontal' },
-    { id: 'appearance', label: 'Оформление', icon: 'ti-palette' },
-    { id: 'about', label: 'Сведения', icon: 'ti-info-circle' },
+const TABS: { id: Tab; icon: string }[] = [
+    { id: 'account', icon: 'ti-user' },
+    { id: 'premium', icon: 'ti-crown' },
+    { id: 'general', icon: 'ti-adjustments-horizontal' },
+    { id: 'appearance', icon: 'ti-palette' },
+    { id: 'about', icon: 'ti-info-circle' },
 ];
 
-const PRO_FEATURES = [
-    'Создание организаций и команд',
-    'Назначение задач участникам',
-    'Неограниченное количество проектов',
-    'Совместная работа над проектами',
-    'Расширенная статистика',
-    'Повторяющиеся задачи',
-];
+const PRO_FEATURES: Record<Language, string[]> = {
+    ru: [
+        'Создание организаций и команд',
+        'Назначение задач участникам',
+        'Неограниченное количество проектов',
+        'Совместная работа над проектами',
+        'Расширенная статистика',
+        'Повторяющиеся задачи',
+    ],
+    en: [
+        'Create organizations and teams',
+        'Assign tasks to members',
+        'Unlimited projects',
+        'Collaborative work on projects',
+        'Advanced statistics',
+        'Recurring tasks',
+    ],
+};
 
-const BUSINESS_FEATURES = [
-    'Всё из PRO',
-    'Создание отделов внутри организации',
-    'Управление ролями и правами',
-    'Приоритетная поддержка',
-    'Аналитика по команде',
-    'Кастомные интеграции',
-];
-
+const BUSINESS_FEATURES: Record<Language, string[]> = {
+    ru: [
+        'Всё из PRO',
+        'Создание отделов внутри организации',
+        'Управление ролями и правами',
+        'Приоритетная поддержка',
+        'Аналитика по команде',
+        'Кастомные интеграции',
+    ],
+    en: [
+        'Everything in PRO',
+        'Departments within organization',
+        'Role and permission management',
+        'Priority support',
+        'Team analytics',
+        'Custom integrations',
+    ],
+};
 
 const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.auth);
     const { subscription } = useAppSelector((state) => state.subscriptions);
+    const { theme, language } = useAppSelector((state) => state.settings);
+    const { t } = useTranslation();
+
     const [activeTab, setActiveTab] = useState<Tab>(initialTab);
     const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +91,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
     if (!isOpen) return null;
 
     const currentPlan = subscription?.plan ?? 'FREE';
+    const proFeatures = PRO_FEATURES[language];
+    const businessFeatures = BUSINESS_FEATURES[language];
 
     return (
         <div
@@ -76,7 +102,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
         >
             <div className='settings-modal'>
                 <div className='settings-modal__header'>
-                    <span className='settings-modal__title'>Настройки</span>
+                    <span className='settings-modal__title'>{t('settings.title')}</span>
                     <button className='settings-modal__close' onClick={onClose}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -93,7 +119,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
                                 onClick={() => setActiveTab(tab.id)}
                             >
                                 <i className={`ti ${tab.icon}`} />
-                                {tab.label}
+                                {t(`settings.tabs.${tab.id}` as Parameters<typeof t>[0])}
                             </button>
                         ))}
                     </nav>
@@ -102,16 +128,16 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
                         {activeTab === 'account' && (
                             <div className='settings-modal__section'>
                                 <div className='settings-modal__row'>
-                                    <span className='settings-modal__label'>Email</span>
+                                    <span className='settings-modal__label'>{t('settings.account.email')}</span>
                                     <span className='settings-modal__value'>{user?.email}</span>
                                 </div>
                                 <div className='settings-modal__row'>
-                                    <span className='settings-modal__label'>Пароль</span>
-                                    <button className='settings-modal__btn'>Изменить пароль</button>
+                                    <span className='settings-modal__label'>{t('settings.account.password')}</span>
+                                    <button className='settings-modal__btn'>{t('settings.account.changePassword')}</button>
                                 </div>
                                 <div className='settings-modal__row settings-modal__row--danger'>
                                     <button className='settings-modal__btn settings-modal__btn--danger'>
-                                        Удалить аккаунт
+                                        {t('settings.account.deleteAccount')}
                                     </button>
                                 </div>
                             </div>
@@ -120,18 +146,17 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
                         {activeTab === 'premium' && (
                             <div className='settings-modal__premium'>
                                 <div className='settings-modal__plan-badge'>
-                                    Текущий план: <strong>{currentPlan}</strong>
+                                    {t('settings.premium.currentPlan')}: <strong>{currentPlan}</strong>
                                 </div>
 
                                 <div className='settings-modal__plans'>
-                                    {/* PRO */}
                                     <div className={`settings-modal__plan ${currentPlan === 'PRO' ? 'settings-modal__plan--active' : ''}`}>
                                         <div className='settings-modal__plan-header'>
                                             <span className='settings-modal__plan-name'>PRO</span>
-                                            <span className='settings-modal__plan-price'>$9.99<span>/мес</span></span>
+                                            <span className='settings-modal__plan-price'>$9.99<span>{t('settings.premium.perMonth')}</span></span>
                                         </div>
                                         <ul className='settings-modal__plan-features'>
-                                            {PRO_FEATURES.map(f => (
+                                            {proFeatures.map(f => (
                                                 <li key={f}>
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                                                         <path d="M20 6L9 17l-5-5" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -145,19 +170,22 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
                                             onClick={() => handleUpgrade('PRO')}
                                             disabled={currentPlan === 'PRO' || currentPlan === 'BUSINESS'}
                                         >
-                                            {currentPlan === 'PRO' ? 'Текущий план' : currentPlan === 'BUSINESS' ? 'Уже активен' : 'Выбрать PRO'}
+                                            {currentPlan === 'PRO'
+                                                ? t('settings.premium.currentPlanActive')
+                                                : currentPlan === 'BUSINESS'
+                                                    ? t('settings.premium.alreadyActive')
+                                                    : t('settings.premium.choosePro')}
                                         </button>
                                     </div>
 
-                                    {/* BUSINESS */}
                                     <div className={`settings-modal__plan settings-modal__plan--featured ${currentPlan === 'BUSINESS' ? 'settings-modal__plan--active' : ''}`}>
-                                        <div className='settings-modal__plan-badge-top'>Популярный</div>
+                                        <div className='settings-modal__plan-badge-top'>{t('settings.premium.popular')}</div>
                                         <div className='settings-modal__plan-header'>
                                             <span className='settings-modal__plan-name'>BUSINESS</span>
-                                            <span className='settings-modal__plan-price'>$24.99<span>/мес</span></span>
+                                            <span className='settings-modal__plan-price'>$24.99<span>{t('settings.premium.perMonth')}</span></span>
                                         </div>
                                         <ul className='settings-modal__plan-features'>
-                                            {BUSINESS_FEATURES.map(f => (
+                                            {businessFeatures.map(f => (
                                                 <li key={f}>
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                                                         <path d="M20 6L9 17l-5-5" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -171,7 +199,9 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
                                             onClick={() => handleUpgrade('BUSINESS')}
                                             disabled={currentPlan === 'BUSINESS'}
                                         >
-                                            {currentPlan === 'BUSINESS' ? 'Текущий план' : 'Выбрать BUSINESS'}
+                                            {currentPlan === 'BUSINESS'
+                                                ? t('settings.premium.currentPlanActive')
+                                                : t('settings.premium.chooseBusiness')}
                                         </button>
                                     </div>
                                 </div>
@@ -181,17 +211,21 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
                         {activeTab === 'general' && (
                             <div className='settings-modal__section'>
                                 <div className='settings-modal__row'>
-                                    <span className='settings-modal__label'>Язык</span>
-                                    <select className='settings-modal__select'>
-                                        <option>Русский</option>
-                                        <option>English</option>
+                                    <span className='settings-modal__label'>{t('settings.general.language')}</span>
+                                    <select
+                                        className='settings-modal__select'
+                                        value={language}
+                                        onChange={e => dispatch(setLanguage(e.target.value as Language))}
+                                    >
+                                        <option value="ru">{t('settings.general.languageRu')}</option>
+                                        <option value="en">{t('settings.general.languageEn')}</option>
                                     </select>
                                 </div>
                                 <div className='settings-modal__row'>
-                                    <span className='settings-modal__label'>Начало недели</span>
+                                    <span className='settings-modal__label'>{t('settings.general.weekStart')}</span>
                                     <select className='settings-modal__select'>
-                                        <option>Понедельник</option>
-                                        <option>Воскресенье</option>
+                                        <option value="monday">{t('settings.general.monday')}</option>
+                                        <option value="sunday">{t('settings.general.sunday')}</option>
                                     </select>
                                 </div>
                             </div>
@@ -200,11 +234,15 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
                         {activeTab === 'appearance' && (
                             <div className='settings-modal__section'>
                                 <div className='settings-modal__row'>
-                                    <span className='settings-modal__label'>Тема</span>
-                                    <select className='settings-modal__select'>
-                                        <option>Тёмная</option>
-                                        <option>Светлая</option>
-                                        <option>Системная</option>
+                                    <span className='settings-modal__label'>{t('settings.appearance.theme')}</span>
+                                    <select
+                                        className='settings-modal__select'
+                                        value={theme}
+                                        onChange={e => dispatch(setTheme(e.target.value as Theme))}
+                                    >
+                                        <option value="dark">{t('settings.appearance.dark')}</option>
+                                        <option value="light">{t('settings.appearance.light')}</option>
+                                        <option value="system">{t('settings.appearance.system')}</option>
                                     </select>
                                 </div>
                             </div>
@@ -213,11 +251,11 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
                         {activeTab === 'about' && (
                             <div className='settings-modal__section'>
                                 <div className='settings-modal__row'>
-                                    <span className='settings-modal__label'>Версия</span>
+                                    <span className='settings-modal__label'>{t('settings.about.version')}</span>
                                     <span className='settings-modal__value'>1.0.0</span>
                                 </div>
                                 <div className='settings-modal__row'>
-                                    <span className='settings-modal__label'>Поддержка</span>
+                                    <span className='settings-modal__label'>{t('settings.about.support')}</span>
                                     <span className='settings-modal__value'>support@east-calendar.ru</span>
                                 </div>
                             </div>

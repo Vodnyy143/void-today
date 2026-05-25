@@ -1,6 +1,7 @@
 import {useAppDispatch, useAppSelector} from "../../store/hooks.ts";
 import {useEffect} from "react";
 import {fetchDashboard, fetchHeatmap, fetchWeeklyStats} from "../../store/slices/statsSlice.ts";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 interface Props {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface Props {
 const ReportModal = ({ isOpen, onClose }: Props) => {
     const dispatch = useAppDispatch();
     const { dashboard, weekly, heatmap } = useAppSelector((state) => state.stats);
+    const { t, language } = useTranslation();
 
     useEffect(() => {
         if (isOpen) {
@@ -45,16 +47,15 @@ const ReportModal = ({ isOpen, onClose }: Props) => {
             date: dateStr,
             count: (heatmapMap.get(dateStr) as number) || 0,
             day: date.getDate(),
-            month: date.toLocaleString('ru', { month: 'short' }),
+            month: date.toLocaleString(language, { month: 'short' }),
         };
     });
-
 
     return (
         <div className='report-overlay' onClick={(e) => e.target === e.currentTarget && onClose()}>
             <div className='report-modal'>
                 <div className='report-modal__header'>
-                    <h2 className='report-modal__title'>Отчёт</h2>
+                    <h2 className='report-modal__title'>{t('report.title')}</h2>
                     <button className='report-modal__close' onClick={onClose}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -63,43 +64,41 @@ const ReportModal = ({ isOpen, onClose }: Props) => {
                 </div>
 
                 <div className='report-modal__body'>
-                    {/* Верхние карточки */}
                     <div className='report-modal__cards'>
                         <div className='report-card'>
-                            <span className='report-card__label'>Задач сегодня</span>
+                            <span className='report-card__label'>{t('report.tasksToday')}</span>
                             <span className='report-card__value report-card__value--red'>
                                 {dashboard?.tasksToday ?? 0}
                             </span>
                         </div>
                         <div className='report-card'>
-                            <span className='report-card__label'>Выполнено сегодня</span>
+                            <span className='report-card__label'>{t('report.doneToday')}</span>
                             <span className='report-card__value report-card__value--red'>
                                 {dashboard?.doneToday ?? 0}
                             </span>
                         </div>
                         <div className='report-card'>
-                            <span className='report-card__label'>Выполнено за неделю</span>
+                            <span className='report-card__label'>{t('report.doneWeek')}</span>
                             <span className='report-card__value report-card__value--blue'>
                                 {weekly?.totalCompleted ?? 0}
                             </span>
                         </div>
                         <div className='report-card'>
-                            <span className='report-card__label'>% выполнения</span>
+                            <span className='report-card__label'>{t('report.completion')}</span>
                             <span className='report-card__value report-card__value--blue'>
                                 {dashboard?.completionRate ?? 0}%
                             </span>
                         </div>
                         <div className='report-card'>
-                            <span className='report-card__label'>Стрик</span>
+                            <span className='report-card__label'>{t('report.streak')}</span>
                             <span className='report-card__value report-card__value--blue'>
                                 {dashboard?.streak ?? 0}
                             </span>
                         </div>
                     </div>
 
-                    {/* Недельный график */}
                     <div className='report-modal__section'>
-                        <h3 className='report-modal__section-title'>Эта неделя</h3>
+                        <h3 className='report-modal__section-title'>{t('report.thisWeek')}</h3>
                         <div className='report-week'>
                             {weekly?.dailyStats?.map((day: any) => (
                                 <div key={day.date} className='report-week__day'>
@@ -118,26 +117,25 @@ const ReportModal = ({ isOpen, onClose }: Props) => {
                         </div>
                     </div>
 
-                    {/* Тепловая карта */}
                     <div className='report-modal__section'>
-                        <h3 className='report-modal__section-title'>Активность за 90 дней</h3>
+                        <h3 className='report-modal__section-title'>{t('report.activity90')}</h3>
                         <div className='report-heatmap'>
                             {heatmapDays.map((day, i) => (
                                 <div
                                     key={i}
                                     className='report-heatmap__cell'
                                     style={{ background: getHeatmapColor(day.count) }}
-                                    title={`${day.date}: ${day.count} задач`}
+                                    title={`${day.date}: ${day.count} ${t('report.tasks')}`}
                                 />
                             ))}
                         </div>
                         <div className='report-heatmap__legend'>
-                            <span>Меньше</span>
+                            <span>{t('report.less')}</span>
                             {[0, 1, 3, 5].map(v => (
                                 <div key={v} className='report-heatmap__legend-cell'
                                      style={{ background: getHeatmapColor(v) }} />
                             ))}
-                            <span>Больше</span>
+                            <span>{t('report.more')}</span>
                         </div>
                     </div>
                 </div>

@@ -9,6 +9,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import {useAppDispatch, useAppSelector} from "../store/hooks.ts";
 import {useEffect, useState} from "react";
 import InviteMemberModal from "../components/modules/InviteMemberModal.tsx";
+import {useTranslation} from "../i18n/useTranslation.ts";
 
 type Tab = 'members' | 'departments' | 'settings';
 
@@ -22,13 +23,14 @@ const OrganizationDetailPage = () => {
     const [isInviteOpen, setIsInviteOpen] = useState(false);
     const [newDeptName, setNewDeptName] = useState('');
     const [isAddingDept, setIsAddingDept] = useState(false);
+    const { t, language } = useTranslation();
 
     useEffect(() => {
         if (id) dispatch(fetchOrganization(id));
     }, [id, dispatch]);
 
     if (!currentOrg) return (
-        <div className='org-detail__loading'>Загрузка...</div>
+        <div className='org-detail__loading'>{t('orgDetail.loading')}</div>
     );
 
     const myMember = currentOrg.members?.find(m => m.userId === user?.id);
@@ -36,7 +38,7 @@ const OrganizationDetailPage = () => {
     const canManage = myRole === 'OWNER' || myRole === 'ADMIN';
 
     const handleRemoveMember = (userId: string) => {
-        if (confirm('Удалить участника?')) {
+        if (confirm(t('orgDetail.confirmRemoveMember'))) {
             dispatch(removeMember({ orgId: currentOrg.id, userId }));
         }
     };
@@ -53,12 +55,17 @@ const OrganizationDetailPage = () => {
     };
 
     const handleDeleteOrg = async () => {
-        if (confirm('Удалить организацию? Это действие необратимо.')) {
+        if (confirm(t('orgDetail.confirmDeleteOrg'))) {
             await dispatch(deleteOrganization(currentOrg.id));
             navigate('/organizations');
         }
     };
 
+    const TAB_LABELS: Record<Tab, string> = {
+        members: t('orgDetail.tabMembers'),
+        departments: t('orgDetail.tabDepartments'),
+        settings: t('orgDetail.tabSettings'),
+    };
 
     return (
         <div className='org-detail'>
@@ -91,19 +98,16 @@ const OrganizationDetailPage = () => {
                         className={`org-detail__tab ${activeTab === tab ? 'org-detail__tab--active' : ''}`}
                         onClick={() => setActiveTab(tab)}
                     >
-                        {tab === 'members' && 'Участники'}
-                        {tab === 'departments' && 'Отделы'}
-                        {tab === 'settings' && 'Настройки'}
+                        {TAB_LABELS[tab]}
                     </button>
                 ))}
             </div>
 
             <div className='org-detail__content'>
-                {/* ── Участники ── */}
                 {activeTab === 'members' && (
                     <div className='org-detail__members'>
                         <div className='org-detail__section-header'>
-                            <span>{currentOrg.members?.length ?? 0} участников</span>
+                            <span>{currentOrg.members?.length ?? 0} {t('orgDetail.membersUnit')}</span>
                             {canManage && (
                                 <button
                                     className='org-detail__invite-btn'
@@ -112,7 +116,7 @@ const OrganizationDetailPage = () => {
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                                         <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                                     </svg>
-                                    Пригласить
+                                    {t('orgDetail.invite')}
                                 </button>
                             )}
                         </div>
@@ -167,11 +171,10 @@ const OrganizationDetailPage = () => {
                     </div>
                 )}
 
-                {/* ── Отделы ── */}
                 {activeTab === 'departments' && (
                     <div className='org-detail__departments'>
                         <div className='org-detail__section-header'>
-                            <span>{currentOrg.departments?.length ?? 0} отделов</span>
+                            <span>{currentOrg.departments?.length ?? 0} {t('orgDetail.departmentsUnit')}</span>
                             {canManage && (
                                 <button
                                     className='org-detail__invite-btn'
@@ -180,7 +183,7 @@ const OrganizationDetailPage = () => {
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                                         <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                                     </svg>
-                                    Добавить отдел
+                                    {t('orgDetail.addDept')}
                                 </button>
                             )}
                         </div>
@@ -189,21 +192,21 @@ const OrganizationDetailPage = () => {
                             <div className='org-detail__add-dept'>
                                 <input
                                     className='org-detail__dept-input'
-                                    placeholder='Название отдела'
+                                    placeholder={t('orgDetail.deptNamePlaceholder')}
                                     value={newDeptName}
                                     onChange={(e) => setNewDeptName(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleAddDepartment()}
                                     autoFocus
                                 />
-                                <button onClick={handleAddDepartment}>Добавить</button>
+                                <button onClick={handleAddDepartment}>{t('orgDetail.add')}</button>
                                 <button onClick={() => { setIsAddingDept(false); setNewDeptName(''); }}>
-                                    Отмена
+                                    {t('orgDetail.cancel')}
                                 </button>
                             </div>
                         )}
 
                         {currentOrg.departments?.length === 0 && !isAddingDept && (
-                            <div className='org-detail__empty'>Отделов пока нет</div>
+                            <div className='org-detail__empty'>{t('orgDetail.noDepts')}</div>
                         )}
 
                         <div className='org-detail__dept-list'>
@@ -217,7 +220,7 @@ const OrganizationDetailPage = () => {
                                     </div>
                                     <span className='dept-row__name'>{dept.name}</span>
                                     <span className='dept-row__count'>
-                                        {dept._count?.projects ?? 0} проектов
+                                        {dept._count?.projects ?? 0} {t('orgDetail.deptProjectsUnit')}
                                     </span>
                                     {canManage && (
                                         <button
@@ -239,27 +242,26 @@ const OrganizationDetailPage = () => {
                     </div>
                 )}
 
-                {/* ── Настройки ── */}
                 {activeTab === 'settings' && (
                     <div className='org-detail__settings'>
                         <div className='org-detail__settings-row'>
-                            <span>Название организации</span>
+                            <span>{t('orgDetail.settingsOrgName')}</span>
                             <span className='org-detail__settings-value'>{currentOrg.name}</span>
                         </div>
                         <div className='org-detail__settings-row'>
-                            <span>Дата создания</span>
+                            <span>{t('orgDetail.settingsCreatedAt')}</span>
                             <span className='org-detail__settings-value'>
-                                {new Date(currentOrg.createdAt).toLocaleDateString('ru')}
+                                {new Date(currentOrg.createdAt).toLocaleDateString(language)}
                             </span>
                         </div>
                         {myRole === 'OWNER' && (
                             <div className='org-detail__danger-zone'>
-                                <h3>Опасная зона</h3>
+                                <h3>{t('orgDetail.dangerZone')}</h3>
                                 <button
                                     className='org-detail__delete-btn'
                                     onClick={handleDeleteOrg}
                                 >
-                                    Удалить организацию
+                                    {t('orgDetail.deleteOrg')}
                                 </button>
                             </div>
                         )}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks.ts";
 import { fetchOrganizations } from "../../store/slices/organizationSlice.ts";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 interface Props {
     isOpen: boolean;
@@ -23,6 +24,7 @@ const COLORS = [
 const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
     const dispatch = useAppDispatch();
     const { organizations } = useAppSelector((state) => state.organizations);
+    const { t } = useTranslation();
 
     const [name, setName] = useState('');
     const [selectedColor, setSelectedColor] = useState('#3b82f6');
@@ -34,7 +36,6 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
         if (isOpen) dispatch(fetchOrganizations());
     }, [isOpen, dispatch]);
 
-    // Отделы выбранной организации
     const departments = organizations.find(o => o.id === selectedOrgId)?.departments ?? [];
 
     if (!isOpen) return null;
@@ -50,12 +51,12 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
 
     const handleOrgChange = (orgId: string) => {
         setSelectedOrgId(orgId);
-        setSelectedDeptId(''); // сбрасываем отдел при смене орг
+        setSelectedDeptId('');
     };
 
     const handleSubmit = () => {
         if (!name.trim()) {
-            setError('Project name is required');
+            setError(t('createProject.nameRequired'));
             return;
         }
         onSubmit({
@@ -77,13 +78,13 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
     return (
         <div className='modal-overlay' onClick={(e) => e.target === e.currentTarget && handleClose()}>
             <div className='modal create-project-modal'>
-                <h2 className='create-project-modal__title'>Add Project</h2>
+                <h2 className='create-project-modal__title'>{t('createProject.title')}</h2>
 
                 <div className='create-project-modal__content'>
                     <input
                         type='text'
                         className='create-project-modal__input'
-                        placeholder='New project name'
+                        placeholder={t('createProject.namePlaceholder')}
                         value={name}
                         onChange={(e) => { setName(e.target.value); if (error) setError(''); }}
                         onKeyDown={handleKeyDown}
@@ -104,19 +105,18 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
                         ))}
                     </div>
 
-                    {/* Организация */}
                     {organizations.length > 0 && (
                         <div className='create-project-modal__field'>
                             <label className='create-project-modal__label'>
-                                Организация
-                                <span className='create-project-modal__label-hint'>(необязательно)</span>
+                                {t('createProject.orgLabel')}
+                                <span className='create-project-modal__label-hint'>{t('createProject.optional')}</span>
                             </label>
                             <select
                                 className='create-project-modal__select'
                                 value={selectedOrgId}
                                 onChange={(e) => handleOrgChange(e.target.value)}
                             >
-                                <option value=''>— Личный проект —</option>
+                                <option value=''>{t('createProject.personalProject')}</option>
                                 {organizations.map(org => (
                                     <option key={org.id} value={org.id}>{org.name}</option>
                                 ))}
@@ -124,19 +124,18 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
                         </div>
                     )}
 
-                    {/* Отдел — показываем только если выбрана организация с отделами */}
                     {selectedOrgId && departments.length > 0 && (
                         <div className='create-project-modal__field'>
                             <label className='create-project-modal__label'>
-                                Отдел
-                                <span className='create-project-modal__label-hint'>(необязательно)</span>
+                                {t('createProject.deptLabel')}
+                                <span className='create-project-modal__label-hint'>{t('createProject.optional')}</span>
                             </label>
                             <select
                                 className='create-project-modal__select'
                                 value={selectedDeptId}
                                 onChange={(e) => setSelectedDeptId(e.target.value)}
                             >
-                                <option value=''>— Без отдела —</option>
+                                <option value=''>{t('createProject.noDept')}</option>
                                 {departments.map(dept => (
                                     <option key={dept.id} value={dept.id}>{dept.name}</option>
                                 ))}
@@ -150,14 +149,14 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
                         className='create-project-modal__btn create-project-modal__btn--cancel'
                         onClick={handleClose}
                     >
-                        Cancel
+                        {t('createProject.cancel')}
                     </button>
                     <button
                         className='create-project-modal__btn create-project-modal__btn--submit'
                         onClick={handleSubmit}
                         disabled={!name.trim()}
                     >
-                        OK
+                        {t('createProject.ok')}
                     </button>
                 </div>
             </div>

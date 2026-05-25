@@ -12,12 +12,7 @@ import {
 import {useAppDispatch, useAppSelector} from "../store/hooks.ts";
 import {useSearchParams} from "react-router-dom";
 import CreateSprintModal from "../components/modules/CreateSprintModal.tsx";
-
-const STATUS_LABEL: Record<string, string> = {
-    PLANNED: 'Запланирован',
-    ACTIVE: 'Активный',
-    COMPLETED: 'Завершён',
-};
+import {useTranslation} from "../i18n/useTranslation.ts";
 
 const STATUS_COLOR: Record<string, string> = {
     PLANNED: '#6b7280',
@@ -50,7 +45,6 @@ const BurndownChart = ({ data, total }: { data: { date: string; remaining: numbe
         return `${x},${y}`;
     });
 
-    // Идеальная линия
     const idealPoints = [
         `${padL},0`,
         `${w},${chartH}`,
@@ -58,7 +52,6 @@ const BurndownChart = ({ data, total }: { data: { date: string; remaining: numbe
 
     return (
         <svg viewBox={`0 0 ${w} ${h}`} className='sprint-burndown'>
-            {/* Ideal line */}
             <polyline
                 points={idealPoints.join(' ')}
                 fill="none"
@@ -66,7 +59,6 @@ const BurndownChart = ({ data, total }: { data: { date: string; remaining: numbe
                 strokeWidth="1.5"
                 strokeDasharray="4 4"
             />
-            {/* Actual line */}
             <polyline
                 points={points.join(' ')}
                 fill="none"
@@ -74,7 +66,6 @@ const BurndownChart = ({ data, total }: { data: { date: string; remaining: numbe
                 strokeWidth="2"
                 strokeLinejoin="round"
             />
-            {/* Area */}
             <polygon
                 points={`${padL},${chartH} ${points.join(' ')} ${w},${chartH}`}
                 fill="rgba(59,130,246,0.08)"
@@ -100,6 +91,14 @@ const SprintCard = ({
     onDelete: () => void;
     isSelected: boolean;
 }) => {
+    const { t, language } = useTranslation();
+
+    const STATUS_LABEL: Record<string, string> = {
+        PLANNED: t('sprints.statusPlanned'),
+        ACTIVE: t('sprints.statusActive'),
+        COMPLETED: t('sprints.statusCompleted'),
+    };
+
     const taskCount = sprint._count?.tasks ?? sprint.tasks?.length ?? 0;
     const doneTasks = sprint.tasks?.filter((t: any) => t.status === 'DONE').length ?? 0;
     const progress = taskCount > 0 ? Math.round((doneTasks / taskCount) * 100) : 0;
@@ -129,8 +128,8 @@ const SprintCard = ({
                         <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
                         <path d="M3 10h18M8 2v4m8-4v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
-                    {new Date(sprint.startDate).toLocaleDateString('ru', { day: 'numeric', month: 'short' })}
-                    {sprint.endDate && ` — ${new Date(sprint.endDate).toLocaleDateString('ru', { day: 'numeric', month: 'short' })}`}
+                    {new Date(sprint.startDate).toLocaleDateString(language, { day: 'numeric', month: 'short' })}
+                    {sprint.endDate && ` — ${new Date(sprint.endDate).toLocaleDateString(language, { day: 'numeric', month: 'short' })}`}
                 </div>
             )}
 
@@ -142,19 +141,19 @@ const SprintCard = ({
                             style={{ width: `${progress}%` }}
                         />
                     </div>
-                    <span className='sprint-card__progress-text'>{doneTasks}/{taskCount} задач</span>
+                    <span className='sprint-card__progress-text'>{doneTasks}/{taskCount} {t('sprints.tasksUnit')}</span>
                 </div>
             )}
 
             <div className='sprint-card__actions' onClick={e => e.stopPropagation()}>
                 {sprint.status === 'PLANNED' && (
                     <button className='sprint-card__btn sprint-card__btn--start' onClick={onStart}>
-                        Запустить
+                        {t('sprints.start')}
                     </button>
                 )}
                 {sprint.status === 'ACTIVE' && (
                     <button className='sprint-card__btn sprint-card__btn--complete' onClick={onComplete}>
-                        Завершить
+                        {t('sprints.complete')}
                     </button>
                 )}
                 {sprint.status !== 'ACTIVE' && (
@@ -175,15 +174,19 @@ const SprintsPage = () => {
     const dispatch = useAppDispatch();
     const [searchParams] = useSearchParams();
     const projectId = searchParams.get('project') ?? '';
+    const { t, tf } = useTranslation();
 
     const { sprints, currentSprint, currentStats, backlog, status } = useAppSelector(s => s.sprints);
-    // const { projects } = useAppSelector(s => s.projects);
+
+    const STATUS_LABEL: Record<string, string> = {
+        PLANNED: t('sprints.statusPlanned'),
+        ACTIVE: t('sprints.statusActive'),
+        COMPLETED: t('sprints.statusCompleted'),
+    };
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'tasks' | 'stats' | 'backlog'>('tasks');
     const [selectedBacklogTasks, setSelectedBacklogTasks] = useState<Set<string>>(new Set());
-
-    // const project = projects.find(p => p.id === projectId);
 
     useEffect(() => {
         if (projectId) {
@@ -207,10 +210,10 @@ const SprintsPage = () => {
     };
 
     const handleComplete = async (sprintId: string) => {
-        if (!confirm('Завершить спринт? Незавершённые задачи вернутся в бэклог.')) return;
+        if (!confirm(t('sprints.confirmComplete'))) return;
         try {
             const result = await dispatch(completeSprint(sprintId)).unwrap();
-            alert(`Спринт завершён! Выполнено ${result.summary.completionRate}% задач. В бэклог перенесено ${result.summary.movedToBacklog} задач.`);
+            alert(tf('sprints.completedMsg', { rate: result.summary.completionRate, moved: result.summary.movedToBacklog }));
             dispatch(fetchBacklog(projectId));
         } catch (e: any) {
             alert(e);
@@ -218,7 +221,7 @@ const SprintsPage = () => {
     };
 
     const handleDelete = async (sprintId: string) => {
-        if (!confirm('Удалить спринт?')) return;
+        if (!confirm(t('sprints.confirmDelete'))) return;
         dispatch(deleteSprint(sprintId));
         if (currentSprint?.id === sprintId) {
             dispatch({ type: 'sprints/clearCurrentSprint' });
@@ -255,7 +258,7 @@ const SprintsPage = () => {
     if (!projectId) {
         return (
             <div className='sprints-page sprints-page--empty'>
-                <p>Выберите проект в боковой панели для работы со спринтами</p>
+                <p>{t('sprints.selectProject')}</p>
             </div>
         );
     }
@@ -263,10 +266,9 @@ const SprintsPage = () => {
     return (
         <div className='sprints-page'>
             <div className='sprints-page__layout'>
-                {/* ── Левая панель: список спринтов ── */}
                 <div className='sprints-sidebar'>
                     <div className='sprints-sidebar__header'>
-                        <h2 className='sprints-sidebar__title'>Спринты</h2>
+                        <h2 className='sprints-sidebar__title'>{t('sprints.title')}</h2>
                         <button
                             className='sprints-sidebar__create-btn'
                             onClick={() => setIsCreateOpen(true)}
@@ -278,12 +280,12 @@ const SprintsPage = () => {
                     </div>
 
                     {status === 'loading' && sprints.length === 0 && (
-                        <div className='sprints-sidebar__loading'>Загрузка...</div>
+                        <div className='sprints-sidebar__loading'>{t('sprints.loading')}</div>
                     )}
 
                     {sprints.length === 0 && status === 'idle' && (
                         <div className='sprints-sidebar__empty'>
-                            Спринтов пока нет
+                            {t('sprints.empty')}
                         </div>
                     )}
 
@@ -302,14 +304,13 @@ const SprintsPage = () => {
                     </div>
                 </div>
 
-                {/* ── Правая панель: детали спринта ── */}
                 <div className='sprints-detail'>
                     {!currentSprint ? (
                         <div className='sprints-detail__empty'>
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
                                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                             </svg>
-                            <p>Выберите спринт для просмотра деталей</p>
+                            <p>{t('sprints.selectSprint')}</p>
                         </div>
                     ) : (
                         <>
@@ -328,7 +329,6 @@ const SprintsPage = () => {
                                 </span>
                             </div>
 
-                            {/* Вкладки */}
                             <div className='sprints-detail__tabs'>
                                 {(['tasks', 'stats', 'backlog'] as const).map(tab => (
                                     <button
@@ -336,19 +336,18 @@ const SprintsPage = () => {
                                         className={`sprints-detail__tab ${activeTab === tab ? 'sprints-detail__tab--active' : ''}`}
                                         onClick={() => setActiveTab(tab)}
                                     >
-                                        {tab === 'tasks' && 'Задачи'}
-                                        {tab === 'stats' && 'Статистика'}
-                                        {tab === 'backlog' && `Бэклог (${backlog.length})`}
+                                        {tab === 'tasks' && t('sprints.tabTasks')}
+                                        {tab === 'stats' && t('sprints.tabStats')}
+                                        {tab === 'backlog' && `${t('kanban.backlog')} (${backlog.length})`}
                                     </button>
                                 ))}
                             </div>
 
-                            {/* Задачи */}
                             {activeTab === 'tasks' && (
                                 <div className='sprints-detail__tasks'>
                                     {currentSprint.tasks?.length === 0 && (
                                         <div className='sprints-detail__no-tasks'>
-                                            Нет задач. Добавьте из бэклога.
+                                            {t('sprints.noTasks')}
                                         </div>
                                     )}
                                     {currentSprint.tasks?.map((task: any) => (
@@ -373,7 +372,7 @@ const SprintsPage = () => {
                                                 <button
                                                     className='sprint-task-row__remove'
                                                     onClick={() => dispatch(removeTaskFromSprint({ sprintId: currentSprint.id, taskId: task.id }))}
-                                                    title="Убрать из спринта"
+                                                    title={t('sprints.removeFromSprint')}
                                                 >
                                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
                                                         <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -385,7 +384,6 @@ const SprintsPage = () => {
                                 </div>
                             )}
 
-                            {/* Статистика */}
                             {activeTab === 'stats' && currentStats && (
                                 <div className='sprints-stats'>
                                     <div className='sprints-stats__cards'>
@@ -393,19 +391,19 @@ const SprintsPage = () => {
                                             <span className='sprints-stat-card__value' style={{ color: '#3b82f6' }}>
                                                 {currentStats.completionRate}%
                                             </span>
-                                            <span className='sprints-stat-card__label'>Выполнено</span>
+                                            <span className='sprints-stat-card__label'>{t('sprints.completionRate')}</span>
                                         </div>
                                         <div className='sprints-stat-card'>
                                             <span className='sprints-stat-card__value'>{currentStats.total}</span>
-                                            <span className='sprints-stat-card__label'>Всего задач</span>
+                                            <span className='sprints-stat-card__label'>{t('sprints.totalTasks')}</span>
                                         </div>
                                         <div className='sprints-stat-card'>
                                             <span className='sprints-stat-card__value' style={{ color: '#22c55e' }}>{currentStats.done}</span>
-                                            <span className='sprints-stat-card__label'>Выполнено</span>
+                                            <span className='sprints-stat-card__label'>{t('sprints.done')}</span>
                                         </div>
                                         <div className='sprints-stat-card'>
                                             <span className='sprints-stat-card__value' style={{ color: '#f97316' }}>{currentStats.inProgress}</span>
-                                            <span className='sprints-stat-card__label'>В работе</span>
+                                            <span className='sprints-stat-card__label'>{t('sprints.inProgress')}</span>
                                         </div>
                                     </div>
 
@@ -418,7 +416,7 @@ const SprintsPage = () => {
 
                                     {currentStats.byAssignee.length > 0 && (
                                         <div className='sprints-stats__team'>
-                                            <h4 className='sprints-stats__section-title'>По исполнителям</h4>
+                                            <h4 className='sprints-stats__section-title'>{t('sprints.byAssignee')}</h4>
                                             {currentStats.byAssignee.map((a, i) => (
                                                 <div key={i} className='sprints-assignee-row'>
                                                     <span className='sprints-assignee-row__name'>{a.name}</span>
@@ -436,7 +434,6 @@ const SprintsPage = () => {
                                 </div>
                             )}
 
-                            {/* Бэклог */}
                             {activeTab === 'backlog' && (
                                 <div className='sprints-backlog'>
                                     {selectedBacklogTasks.size > 0 && (
@@ -445,20 +442,20 @@ const SprintsPage = () => {
                                                 className='sprints-backlog__add-btn'
                                                 onClick={handleAddToSprint}
                                             >
-                                                Добавить в спринт ({selectedBacklogTasks.size})
+                                                {t('sprints.addToSprint')} ({selectedBacklogTasks.size})
                                             </button>
                                             <button
                                                 className='sprints-backlog__clear-btn'
                                                 onClick={() => setSelectedBacklogTasks(new Set())}
                                             >
-                                                Сбросить
+                                                {t('sprints.reset')}
                                             </button>
                                         </div>
                                     )}
 
                                     {backlog.length === 0 && (
                                         <div className='sprints-backlog__empty'>
-                                            Бэклог пуст — все задачи находятся в спринтах
+                                            {t('sprints.backlogEmpty')}
                                         </div>
                                     )}
 

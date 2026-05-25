@@ -1,6 +1,7 @@
 import {useAppDispatch} from "../../store/hooks.ts";
 import {type FormEvent, useState} from "react";
 import {createSprint} from "../../store/slices/sprintsSlice.ts";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 interface Props {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface Props {
 
 const CreateSprintModal = ({ isOpen, onClose, projectId }: Props) => {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const [name, setName] = useState('');
     const [goal, setGoal] = useState('');
     const [startDate, setStartDate] = useState('');
@@ -36,7 +38,7 @@ const CreateSprintModal = ({ isOpen, onClose, projectId }: Props) => {
             setEndDate('');
             onClose();
         } catch (e: any) {
-            setError(typeof e === 'string' ? e : 'Ошибка создания спринта');
+            setError(typeof e === 'string' ? e : t('createSprint.error'));
         } finally {
             setLoading(false);
         }
@@ -48,7 +50,7 @@ const CreateSprintModal = ({ isOpen, onClose, projectId }: Props) => {
         <div className='sprint-modal-overlay' onClick={e => e.target === e.currentTarget && onClose()}>
             <div className='sprint-modal'>
                 <div className='sprint-modal__header'>
-                    <h2 className='sprint-modal__title'>Новый спринт</h2>
+                    <h2 className='sprint-modal__title'>{t('createSprint.title')}</h2>
                     <button className='sprint-modal__close' onClick={onClose}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -58,10 +60,10 @@ const CreateSprintModal = ({ isOpen, onClose, projectId }: Props) => {
 
                 <form className='sprint-modal__body' onSubmit={handleSubmit}>
                     <div className='sprint-modal__field'>
-                        <label className='sprint-modal__label'>Название *</label>
+                        <label className='sprint-modal__label'>{t('createSprint.nameLabel')}</label>
                         <input
                             className='sprint-modal__input'
-                            placeholder='Например: Sprint 1'
+                            placeholder={t('createSprint.namePlaceholder')}
                             value={name}
                             onChange={e => setName(e.target.value)}
                             autoFocus
@@ -69,10 +71,10 @@ const CreateSprintModal = ({ isOpen, onClose, projectId }: Props) => {
                     </div>
 
                     <div className='sprint-modal__field'>
-                        <label className='sprint-modal__label'>Цель спринта</label>
+                        <label className='sprint-modal__label'>{t('createSprint.goalLabel')}</label>
                         <textarea
                             className='sprint-modal__textarea'
-                            placeholder='Что планируете завершить в этом спринте?'
+                            placeholder={t('createSprint.goalPlaceholder')}
                             value={goal}
                             onChange={e => setGoal(e.target.value)}
                             rows={2}
@@ -81,7 +83,7 @@ const CreateSprintModal = ({ isOpen, onClose, projectId }: Props) => {
 
                     <div className='sprint-modal__dates'>
                         <div className='sprint-modal__field'>
-                            <label className='sprint-modal__label'>Дата начала</label>
+                            <label className='sprint-modal__label'>{t('createSprint.startDate')}</label>
                             <input
                                 className='sprint-modal__input'
                                 type='date'
@@ -90,7 +92,7 @@ const CreateSprintModal = ({ isOpen, onClose, projectId }: Props) => {
                             />
                         </div>
                         <div className='sprint-modal__field'>
-                            <label className='sprint-modal__label'>Дата окончания</label>
+                            <label className='sprint-modal__label'>{t('createSprint.endDate')}</label>
                             <input
                                 className='sprint-modal__input'
                                 type='date'
@@ -108,14 +110,14 @@ const CreateSprintModal = ({ isOpen, onClose, projectId }: Props) => {
                             className='sprint-modal__btn sprint-modal__btn--cancel'
                             onClick={onClose}
                         >
-                            Отмена
+                            {t('createSprint.cancel')}
                         </button>
                         <button
                             type='submit'
                             className='sprint-modal__btn sprint-modal__btn--primary'
                             disabled={loading || !name.trim()}
                         >
-                            {loading ? 'Создание...' : 'Создать'}
+                            {loading ? t('createSprint.creating') : t('createSprint.create')}
                         </button>
                     </div>
                 </form>

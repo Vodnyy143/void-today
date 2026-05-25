@@ -1,6 +1,7 @@
 import {useAppDispatch, useAppSelector} from "../../store/hooks.ts";
 import {useEffect, useMemo, useState} from "react";
 import {useSearchParams} from "react-router-dom";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 import {
     clearError,
     createTask,
@@ -20,6 +21,7 @@ const TodoSection = () => {
     const { projects } = useAppSelector((state) => state.projects);
     const [assigneeId, setAssigneeId] = useState('');
     const { currentProject } = useAppSelector((state) => state.projects);
+    const { t } = useTranslation();
 
     const [searchParams] = useSearchParams();
     const [value, setValue] = useState('');
@@ -39,14 +41,14 @@ const TodoSection = () => {
     const getViewTitle = () => {
         if (currentProjectId) {
             const project = projects.find(p => p.id === currentProjectId);
-            return project?.name || 'Проект';
+            return project?.name || t('todos.project');
         }
-        if (currentStatus === 'DONE') return 'Завершённые';
+        if (currentStatus === 'DONE') return t('todos.completed');
         switch (currentView) {
-            case 'today': return 'Сегодня';
-            case 'tomorrow': return 'Завтра';
-            case 'week': return 'На этой неделе';
-            default: return 'Задачи';
+            case 'today': return t('todos.today');
+            case 'tomorrow': return t('todos.tomorrow');
+            case 'week': return t('todos.thisWeek');
+            default: return t('todos.tasks');
         }
     };
 
@@ -165,9 +167,9 @@ const TodoSection = () => {
             });
 
             return [
-                { label: 'Высокий приоритет', key: 'HIGH', tasks: groups.HIGH, time: '0m' },
-                { label: 'Средний приоритет', key: 'MEDIUM', tasks: groups.MEDIUM, time: '0m' },
-                { label: 'Низкий приоритет', key: 'LOW', tasks: groups.LOW, time: '0m' },
+                { label: t('todos.priorityHigh'), key: 'HIGH', tasks: groups.HIGH, time: '0m' },
+                { label: t('todos.priorityMedium'), key: 'MEDIUM', tasks: groups.MEDIUM, time: '0m' },
+                { label: t('todos.priorityLow'), key: 'LOW', tasks: groups.LOW, time: '0m' },
             ].filter(g => g.tasks.length > 0);
 
         } else if (sortMode === 'project') {
@@ -188,7 +190,7 @@ const TodoSection = () => {
             const result = Object.entries(groups).map(([projectId, tasks]) => {
                 const project = projects.find(p => p.id === projectId);
                 return {
-                    label: project?.name || 'Неизвестный проект',
+                    label: project?.name || t('todos.unknownProject'),
                     key: projectId,
                     tasks,
                     time: '0m',
@@ -197,7 +199,7 @@ const TodoSection = () => {
 
             if (noProject.length > 0) {
                 result.push({
-                    label: 'Задачи',
+                    label: t('todos.tasks'),
                     key: 'no-project',
                     tasks: noProject,
                     time: '0m',
@@ -282,7 +284,7 @@ const TodoSection = () => {
                     <button
                         className={`todo-section__sort-btn ${sortMode === 'project' ? 'todo-section__sort-btn--active' : ''}`}
                         onClick={() => setSortMode(sortMode === 'project' ? 'none' : 'project')}
-                        title="Сортировать по проектам"
+                        title={t('todos.sortByProject')}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z"
@@ -295,7 +297,7 @@ const TodoSection = () => {
                     <button
                         className={`todo-section__sort-btn ${sortMode === 'priority' ? 'todo-section__sort-btn--active' : ''}`}
                         onClick={() => setSortMode(sortMode === 'priority' ? 'none' : 'priority')}
-                        title="Сортировать по приоритету"
+                        title={t('todos.sortByPriority')}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
@@ -309,7 +311,7 @@ const TodoSection = () => {
                         <button
                             className={`todo-section__header-btn ${isMembersSidebarOpen ? 'todo-section__header-btn--active' : ''}`}
                             onClick={() => setIsMembersSidebarOpen(!isMembersSidebarOpen)}
-                            title="Участники проекта"
+                            title={t('todos.projectMembers')}
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"
@@ -323,19 +325,19 @@ const TodoSection = () => {
             <div className='todo-section__stats'>
                 <div className='todo-section__stat'>
                     <p className='todo-section__stat-value'>{stats.estimatedTime}<span className='todo-section__stat-unit'>m</span></p>
-                    <p className='todo-section__stat-label'>Оценочное время</p>
+                    <p className='todo-section__stat-label'>{t('todos.estimatedTime')}</p>
                 </div>
                 <div className='todo-section__stat'>
                     <p className='todo-section__stat-value'>{stats.todoTasks}</p>
-                    <p className='todo-section__stat-label'>Задач к выполнению</p>
+                    <p className='todo-section__stat-label'>{t('todos.tasksTodo')}</p>
                 </div>
                 <div className='todo-section__stat'>
                     <p className='todo-section__stat-value'>{stats.elapsedTime}<span className='todo-section__stat-unit'>m</span></p>
-                    <p className='todo-section__stat-label'>Затраченное время</p>
+                    <p className='todo-section__stat-label'>{t('todos.timeSpent')}</p>
                 </div>
                 <div className='todo-section__stat'>
                     <p className='todo-section__stat-value'>{stats.completedTasks}</p>
-                    <p className='todo-section__stat-label'>Выполненные задачи</p>
+                    <p className='todo-section__stat-label'>{t('todos.completedTasks')}</p>
                 </div>
             </div>
 
@@ -346,7 +348,7 @@ const TodoSection = () => {
                     </svg>
                     <input
                         className='todo-section__input'
-                        placeholder={`Добавить задачу в "${getViewTitle()}", нажмите Enter для сохранения`}
+                        placeholder={`${t('todos.addTaskPrefix')} "${getViewTitle()}", ${t('todos.addTaskSuffix')}`}
                         value={value}
                         onChange={e => setValue(e.target.value)}
                         onKeyDown={(e) => {
@@ -367,7 +369,7 @@ const TodoSection = () => {
                                 onChange={(e) => setAssigneeId(e.target.value)}
                                 title="Исполнитель"
                             >
-                                <option value=''>Без исполнителя</option>
+                                <option value=''>{t('todos.noAssignee')}</option>
                                 {currentProject.members.map(member => (
                                     <option key={member.userId} value={member.userId}>
                                         {member.user.name || member.user.email}
@@ -398,10 +400,10 @@ const TodoSection = () => {
 
             <div className='todo-section__list'>
                 {isLoading && tasks.length === 0 ? (
-                    <div className='todo-section__loading'>Загрузка...</div>
+                    <div className='todo-section__loading'>{t('todos.loading')}</div>
                 ) : tasks.length === 0 ? (
                     <div className='todo-section__empty'>
-                        <p>Пока нет задач. Добавьте первую задачу выше!</p>
+                        <p>{t('todos.empty')}</p>
                     </div>
                 ) : groupedTasks ? (
                     groupedTasks.map((group) => (

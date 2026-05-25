@@ -2,6 +2,7 @@ import {useState} from "react";
 import * as React from "react";
 import LoginForm from "../widgets/LoginForm";
 import RegisterForm from "../widgets/RegisterForm";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 interface Props {
     isOpen: boolean;
@@ -12,6 +13,7 @@ type AuthMode = 'login' | 'register';
 
 const AuthModal = ({isOpen, onClose}: Props) => {
     const [mode, setMode] = useState<AuthMode>('login');
+    const { t } = useTranslation();
 
     if(!isOpen) return null;
 
@@ -43,7 +45,7 @@ const AuthModal = ({isOpen, onClose}: Props) => {
                                 className='auth-modal__link'
                                 onClick={() => setMode('register')}
                             >
-                                Регистрация
+                                {t('auth.register')}
                             </button>
                         </p>
                     ) : (
@@ -52,7 +54,7 @@ const AuthModal = ({isOpen, onClose}: Props) => {
                                 className='auth-modal__link'
                                 onClick={() => setMode('login')}
                             >
-                                Вход
+                                {t('auth.login')}
                             </button>
                         </p>
                     )}

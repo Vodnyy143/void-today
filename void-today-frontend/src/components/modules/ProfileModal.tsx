@@ -1,6 +1,7 @@
 import {useAppDispatch} from "../../store/hooks.ts";
 import {signOut} from "../../store/slices/authSlice.ts";
 import {useEffect, useRef} from "react";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 interface Props {
     isOpen: boolean;
@@ -8,11 +9,10 @@ interface Props {
     anchorRef: React.RefObject<HTMLButtonElement | null>;
 }
 
-
-const ProfileModal = ({isOpen, onClose, anchorRef }: Props) => {
+const ProfileModal = ({isOpen, onClose, anchorRef}: Props) => {
     const dispatch = useAppDispatch();
     const dropdownRef = useRef<HTMLDivElement>(null);
-
+    const { t } = useTranslation();
 
     const handleLogout = async () => {
         await dispatch(signOut());
@@ -37,31 +37,31 @@ const ProfileModal = ({isOpen, onClose, anchorRef }: Props) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen, onClose, anchorRef]);
 
-    if(!isOpen) return null;
+    if (!isOpen) return null;
 
     return (
         <div className='profile-dropdown' ref={dropdownRef}>
             <div className='profile-dropdown__section'>
-                <p className='profile-dropdown__text'>Последняя синхронизация: 2 минуты назад</p>
-                <button className='profile-dropdown__link'>Синхронизировать</button>
+                <p className='profile-dropdown__text'>{t('profile.lastSync')}</p>
+                <button className='profile-dropdown__link'>{t('profile.sync')}</button>
             </div>
 
             <div className='profile-dropdown__section'>
-                <p className='profile-dropdown__text'>Осталось премиум-дней: 0</p>
-                <button className='profile-dropdown__link'>Купить Premium</button>
+                <p className='profile-dropdown__text'>{t('profile.premiumDays')}</p>
+                <button className='profile-dropdown__link'>{t('profile.buyPremium')}</button>
             </div>
 
             <div className='profile-dropdown__divider'></div>
 
             <div className='profile-dropdown__actions'>
                 <button className='profile-dropdown__action'>
-                    Настройки аккаунта
+                    {t('profile.accountSettings')}
                 </button>
                 <button
                     className='profile-dropdown__action profile-dropdown__action--logout'
                     onClick={handleLogout}
                 >
-                    Выйти
+                    {t('profile.logout')}
                 </button>
             </div>
         </div>

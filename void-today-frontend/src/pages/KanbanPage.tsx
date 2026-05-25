@@ -10,6 +10,7 @@ import {
 import {useAppDispatch, useAppSelector} from "../store/hooks.ts";
 import {useSearchParams} from "react-router-dom";
 import {getTasks} from "../store/slices/taskSlice.ts";
+import {useTranslation} from "../i18n/useTranslation.ts";
 
 
 const PRIORITY_COLOR: Record<string, string> = {
@@ -25,6 +26,7 @@ const TaskCard = ({
     task: KanbanTask;
     onDragStart: (e: React.DragEvent, taskId: string, fromColumnId: string) => void;
 }) => {
+    const { language } = useTranslation();
     const completedCheckpoints = task.checkpoints?.filter(c => c.done).length ?? 0;
     const totalCheckpoints = task.checkpoints?.length ?? 0;
 
@@ -44,7 +46,7 @@ const TaskCard = ({
                             <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
                             <path d="M3 10h18M8 2v4m8-4v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                         </svg>
-                        {new Date(task.dueDate).toLocaleDateString('ru', { day: 'numeric', month: 'short' })}
+                        {new Date(task.dueDate).toLocaleDateString(language, { day: 'numeric', month: 'short' })}
                     </span>
                 )}
 
@@ -86,6 +88,7 @@ const Column = ({
     onDeleteColumn: (columnId: string) => void;
     canManage: boolean;
 }) => {
+    const { t } = useTranslation();
     const [isDragOver, setIsDragOver] = useState(false);
     const isAtLimit = column.wipLimit !== null && column.wipLimit !== undefined
         && column.tasks.length >= column.wipLimit;
@@ -104,7 +107,7 @@ const Column = ({
                     <button
                         className='kanban-column__delete'
                         onClick={() => onDeleteColumn(column.id)}
-                        title="Удалить колонку"
+                        title={t('kanban.deleteColumn')}
                     >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                             <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -115,7 +118,7 @@ const Column = ({
 
             {isAtLimit && (
                 <div className='kanban-column__wip-warning'>
-                    WIP-лимит достигнут
+                    {t('kanban.wipReached')}
                 </div>
             )}
 
@@ -129,7 +132,7 @@ const Column = ({
                     <TaskCard key={task.id} task={task} onDragStart={onDragStart} />
                 ))}
                 {column.tasks.length === 0 && (
-                    <div className='kanban-column__empty'>Перетащите сюда задачу</div>
+                    <div className='kanban-column__empty'>{t('kanban.dropHere')}</div>
                 )}
             </div>
         </div>
@@ -140,6 +143,7 @@ const KanbanPage = () => {
     const dispatch = useAppDispatch();
     const [searchParams] = useSearchParams();
     const projectId = searchParams.get('project') ?? '';
+    const { t } = useTranslation();
 
     const { boards, currentBoard, status } = useAppSelector(s => s.kanban);
     const { projects } = useAppSelector(s => s.projects);
@@ -182,7 +186,7 @@ const KanbanPage = () => {
     };
 
     const handleDeleteBoard = async (boardId: string) => {
-        if (confirm('Удалить доску? Задачи останутся в проекте.')) {
+        if (confirm(t('kanban.confirmDeleteBoard'))) {
             dispatch(deleteBoard(boardId));
         }
     };
@@ -200,7 +204,7 @@ const KanbanPage = () => {
     };
 
     const handleDeleteColumn = (columnId: string) => {
-        if (confirm('Удалить колонку? Задачи останутся в проекте.')) {
+        if (confirm(t('kanban.confirmDeleteColumn'))) {
             dispatch(deleteColumn(columnId));
         }
     };
@@ -217,15 +221,13 @@ const KanbanPage = () => {
         const fromColumnId = dragFromColumnId.current;
         if (!taskId) return;
 
-        // Если из бэклога — просто перемещаем в колонку без оптимистичного UI
         if (fromColumnId === 'backlog') {
             try {
                 await dispatch(moveTask({ taskId, columnId: toColumnId })).unwrap();
-                // Перезагружаем доску и задачи
                 dispatch(fetchBoard(currentBoard!.id));
                 dispatch(getTasks({ projectId }));
             } catch (err: any) {
-                alert(err || 'Ошибка перемещения задачи');
+                alert(err || t('kanban.errorMove'));
             }
             dragTaskId.current = '';
             dragFromColumnId.current = '';
@@ -239,7 +241,7 @@ const KanbanPage = () => {
             await dispatch(moveTask({ taskId, columnId: toColumnId })).unwrap();
         } catch (err: any) {
             dispatch(optimisticMoveTask({ taskId, fromColumnId: toColumnId, toColumnId: fromColumnId }));
-            alert(err || 'Ошибка перемещения задачи');
+            alert(err || t('kanban.errorMove'));
         }
         dragTaskId.current = '';
         dragFromColumnId.current = '';
@@ -248,7 +250,7 @@ const KanbanPage = () => {
     if (!projectId) {
         return (
             <div className='kanban-page kanban-page--empty'>
-                <p>Выберите проект в боковой панели для работы с канбан-досками</p>
+                <p>{t('kanban.selectProject')}</p>
             </div>
         );
     }
@@ -260,7 +262,7 @@ const KanbanPage = () => {
                     <h1 className='kanban-page__title'>
                         {project?.name ?? 'Kanban'}
                     </h1>
-                    <span className='kanban-page__subtitle'>Канбан-доски</span>
+                    <span className='kanban-page__subtitle'>{t('kanban.subtitle')}</span>
                 </div>
             </div>
 
@@ -293,13 +295,13 @@ const KanbanPage = () => {
                     <div className='kanban-board-create'>
                         <input
                             className='kanban-board-create__input'
-                            placeholder='Название доски'
+                            placeholder={t('kanban.boardNamePlaceholder')}
                             value={newBoardName}
                             onChange={e => setNewBoardName(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleCreateBoard()}
                             autoFocus
                         />
-                        <button onClick={handleCreateBoard}>Создать</button>
+                        <button onClick={handleCreateBoard}>{t('common.create')}</button>
                         <button onClick={() => { setIsCreatingBoard(false); setNewBoardName(''); }}>✕</button>
                     </div>
                 ) : (
@@ -307,7 +309,7 @@ const KanbanPage = () => {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                             <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                         </svg>
-                        Новая доска
+                        {t('kanban.newBoard')}
                     </button>
                 )}
             </div>
@@ -321,13 +323,12 @@ const KanbanPage = () => {
                         <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                               stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                    Бэклог ({boardBacklog.length})
+                    {t('kanban.backlog')} ({boardBacklog.length})
                 </button>
             )}
 
-            {/* Доска */}
             {status === 'loading' && !currentBoard && (
-                <div className='kanban-page__loading'>Загрузка...</div>
+                <div className='kanban-page__loading'>{t('kanban.loading')}</div>
             )}
 
             {!currentBoard && status === 'idle' && boards.length === 0 && (
@@ -338,7 +339,7 @@ const KanbanPage = () => {
                         <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.5"/>
                         <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.5"/>
                     </svg>
-                    <p>Нет досок. Создайте первую доску выше.</p>
+                    <p>{t('kanban.noBoards')}</p>
                 </div>
             )}
 
@@ -347,16 +348,16 @@ const KanbanPage = () => {
                     {showBacklog && (
                         <div className='kanban-backlog'>
                             <div className='kanban-backlog__header'>
-                                <span>Задачи проекта</span>
+                                <span>{t('kanban.projectTasks')}</span>
                                 <button onClick={() => setShowBacklog(false)}>✕</button>
                             </div>
                             <p className='kanban-backlog__hint'>
-                                Перетащите задачу на нужную колонку
+                                {t('kanban.dragHint')}
                             </p>
                             <div className='kanban-backlog__list'>
                                 {boardBacklog.length === 0 && (
                                     <div className='kanban-backlog__empty'>
-                                        Все задачи уже на доске
+                                        {t('kanban.allOnBoard')}
                                     </div>
                                 )}
                                 {boardBacklog.map(task => (
@@ -397,19 +398,18 @@ const KanbanPage = () => {
                             ))
                         }
 
-                        {/* Добавить колонку */}
                         {isAddingColumn ? (
                             <div className='kanban-add-column'>
                                 <input
                                     className='kanban-add-column__input'
-                                    placeholder='Название колонки'
+                                    placeholder={t('kanban.columnNamePlaceholder')}
                                     value={newColumnName}
                                     onChange={e => setNewColumnName(e.target.value)}
                                     autoFocus
                                 />
                                 <input
                                     className='kanban-add-column__input kanban-add-column__input--wip'
-                                    placeholder='WIP-лимит (необязательно)'
+                                    placeholder={t('kanban.wipLimitPlaceholder')}
                                     type='number'
                                     min='1'
                                     value={newColumnWip}
@@ -420,13 +420,13 @@ const KanbanPage = () => {
                                         className='kanban-add-column__btn kanban-add-column__btn--confirm'
                                         onClick={handleAddColumn}
                                     >
-                                        Добавить
+                                        {t('kanban.addColumnBtn')}
                                     </button>
                                     <button
                                         className='kanban-add-column__btn kanban-add-column__btn--cancel'
                                         onClick={() => { setIsAddingColumn(false); setNewColumnName(''); setNewColumnWip(''); }}
                                     >
-                                        Отмена
+                                        {t('common.cancel')}
                                     </button>
                                 </div>
                             </div>
@@ -438,7 +438,7 @@ const KanbanPage = () => {
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                                     <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                                 </svg>
-                                Добавить колонку
+                                {t('kanban.addColumnBtn')}
                             </button>
                         )}
                     </div>

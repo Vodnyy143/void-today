@@ -5,7 +5,7 @@ import Input from "../elements/Input.tsx";
 import Button from "../elements/Button.tsx";
 import {clearError, signUp} from "../../store/slices/authSlice.ts";
 import {useAppDispatch, useAppSelector} from "../../store/hooks.ts";
-
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 interface Props {
     onSuccess?: () => void;
@@ -15,7 +15,7 @@ const RegisterForm = ({ onSuccess }: Props) => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { isLoading, error: reduxError } = useAppSelector((state) => state.auth);
-
+    const { t } = useTranslation();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -24,18 +24,17 @@ const RegisterForm = ({ onSuccess }: Props) => {
 
     const error = localError || reduxError;
 
-
     const handleRegister = async () => {
         setLocalError('');
         dispatch(clearError());
 
-        if (!name || !email || !password ) {
-            setLocalError('Заполните все поля');
+        if (!name || !email || !password) {
+            setLocalError(t('auth.fillAllFields'));
             return;
         }
 
         if (password.length < 6) {
-            setLocalError('Пароль должен быть не менее 6 символов');
+            setLocalError(t('auth.passwordMinLength'));
             return;
         }
 
@@ -59,7 +58,7 @@ const RegisterForm = ({ onSuccess }: Props) => {
             <div className='register-form__inputs'>
                 <Input
                     type='text'
-                    placeholder='Имя'
+                    placeholder={t('auth.namePlaceholder')}
                     value={name}
                     onChange={(e) => {
                         setName(e.target.value);
@@ -70,7 +69,7 @@ const RegisterForm = ({ onSuccess }: Props) => {
 
                 <Input
                     type='email'
-                    placeholder='Почта'
+                    placeholder={t('auth.emailPlaceholder')}
                     value={email}
                     onChange={(e) => {
                         setEmail(e.target.value);
@@ -81,7 +80,7 @@ const RegisterForm = ({ onSuccess }: Props) => {
 
                 <Input
                     type='password'
-                    placeholder='Пароль'
+                    placeholder={t('auth.passwordPlaceholder')}
                     value={password}
                     onChange={(e) => {
                         setPassword(e.target.value);
@@ -94,7 +93,7 @@ const RegisterForm = ({ onSuccess }: Props) => {
             {error && (<div className='register-form__error'>{error}</div>)}
 
             <Button onClick={handleRegister} disabled={isLoading}>
-                {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
+                {isLoading ? t('auth.registering') : t('auth.registerBtn')}
             </Button>
         </div>
     );

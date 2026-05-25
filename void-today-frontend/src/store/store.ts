@@ -8,6 +8,7 @@ import statsReducer from './slices/statsSlice';
 import kanbanReducer from './slices/kanbanSlice';
 import sprintsReducer from './slices/sprintsSlice';
 import notificationsReducer from './slices/notificationsSlice';
+import settingsReducer from './slices/settingsSlice';
 
 export const store = configureStore({
     reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
         kanban: kanbanReducer,
         sprints: sprintsReducer,
         notifications: notificationsReducer,
+        settings: settingsReducer,
     },
 });
 

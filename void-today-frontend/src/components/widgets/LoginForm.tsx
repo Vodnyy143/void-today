@@ -5,6 +5,7 @@ import Button from "../elements/Button.tsx";
 import {useAppDispatch, useAppSelector} from "../../store/hooks.ts";
 import {clearError, signIn} from "../../store/slices/authSlice.ts";
 import {useNavigate} from "react-router-dom";
+import {useTranslation} from "../../i18n/useTranslation.ts";
 
 interface Props {
     onSuccess?: () => void;
@@ -14,6 +15,7 @@ const LoginForm = ({ onSuccess }: Props) => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { isLoading, error } = useAppSelector((state) => state.auth);
+    const { t } = useTranslation();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -47,14 +49,14 @@ const LoginForm = ({ onSuccess }: Props) => {
 
                 <Input
                     type='email'
-                    placeholder='Почта'
+                    placeholder={t('auth.emailPlaceholder')}
                     value={email}
                     onChange={handleEmailChange}
                 />
 
                 <Input
                     type='password'
-                    placeholder='Password'
+                    placeholder={t('auth.passwordPlaceholder')}
                     value={password}
                     onChange={handlePasswordChange}
                 />
@@ -63,11 +65,11 @@ const LoginForm = ({ onSuccess }: Props) => {
             {error && (<div className='login-form__error'>{error}</div>)}
 
             <Button onClick={handleLogin} disabled={isLoading}>
-                {isLoading ? 'Вход...' : 'Войти'}
+                {isLoading ? t('auth.loggingIn') : t('auth.loginBtn')}
             </Button>
 
             <a href="#" className='login-form__forgot'>
-                Забыли пароль?
+                {t('auth.forgotPassword')}
             </a>
         </div>
     );

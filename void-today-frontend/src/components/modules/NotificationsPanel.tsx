@@ -9,7 +9,8 @@ import {
     type Notification,
     type NotificationType,
 } from '../../store/slices/notificationsSlice';
-
+import {useTranslation} from "../../i18n/useTranslation.ts";
+import {type Language} from "../../i18n/translations.ts";
 
 const TYPE_ICON: Record<NotificationType, JSX.Element> = {
     TASK_ASSIGNED: (
@@ -64,29 +65,31 @@ const TYPE_COLOR: Record<NotificationType, string> = {
     MENITION: '#ec4899',
 };
 
-// ─── Форматирование даты ──────────────────────────────────────────────────────
-
-const formatTime = (dateStr: string): string => {
+const makeFormatTime = (
+    t: (key: any) => string,
+    language: Language,
+) => (dateStr: string): string => {
     const date = new Date(dateStr);
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diff < 60) return 'только что';
-    if (diff < 3600) return `${Math.floor(diff / 60)} мин назад`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} ч назад`;
-    if (diff < 604800) return `${Math.floor(diff / 86400)} дн назад`;
-
-    return date.toLocaleDateString('ru', { day: 'numeric', month: 'short' });
+    if (diff < 60) return t('notifications.justNow');
+    if (diff < 3600) return `${Math.floor(diff / 60)} ${t('notifications.minAgo')}`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} ${t('notifications.hAgo')}`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)} ${t('notifications.dAgo')}`;
+    return date.toLocaleDateString(language, { day: 'numeric', month: 'short' });
 };
 
-// ─── Notification Item ────────────────────────────────────────────────────────
-
 const NotificationItem = ({
-                              notification,
-                              onRead,
-                              onDelete,
-                          }: {
+    notification,
+    time,
+    deleteTitle,
+    onRead,
+    onDelete,
+}: {
     notification: Notification;
+    time: string;
+    deleteTitle: string;
     onRead: (id: string) => void;
     onDelete: (id: string) => void;
 }) => {
@@ -104,7 +107,7 @@ const NotificationItem = ({
 
             <div className='notif-item__body'>
                 <p className='notif-item__text'>{notification.text}</p>
-                <span className='notif-item__time'>{formatTime(notification.createdAt)}</span>
+                <span className='notif-item__time'>{time}</span>
             </div>
 
             {!notification.read && <div className='notif-item__dot' />}
@@ -112,7 +115,7 @@ const NotificationItem = ({
             <button
                 className='notif-item__delete'
                 onClick={(e) => { e.stopPropagation(); onDelete(notification.id); }}
-                title="Удалить"
+                title={deleteTitle}
             >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
                     <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -133,6 +136,9 @@ const NotificationsPanel = ({ isOpen, onClose, anchorRef }: Props) => {
     const { items, unreadCount, status } = useAppSelector(s => s.notifications);
     const [unreadOnly, setUnreadOnly] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
+    const { t, language } = useTranslation();
+
+    const formatTime = makeFormatTime(t, language);
 
     useEffect(() => {
         if (isOpen) {
@@ -156,7 +162,6 @@ const NotificationsPanel = ({ isOpen, onClose, anchorRef }: Props) => {
         return () => document.removeEventListener('mousedown', handleClick);
     }, [isOpen, onClose, anchorRef]);
 
-    // Закрытие по Escape
     useEffect(() => {
         if (!isOpen) return;
         const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -170,7 +175,7 @@ const NotificationsPanel = ({ isOpen, onClose, anchorRef }: Props) => {
     const handleMarkAllRead = () => dispatch(markAllRead());
     const handleDelete = (id: string) => dispatch(deleteNotification(id));
     const handleDeleteAll = () => {
-        if (confirm('Удалить все уведомления?')) dispatch(deleteAllNotifications());
+        if (confirm(t('notifications.confirmClear'))) dispatch(deleteAllNotifications());
     };
 
     const filtered = unreadOnly ? items.filter(n => !n.read) : items;
@@ -179,7 +184,7 @@ const NotificationsPanel = ({ isOpen, onClose, anchorRef }: Props) => {
         <div className='notif-panel' ref={panelRef}>
             <div className='notif-panel__header'>
                 <h3 className='notif-panel__title'>
-                    Уведомления
+                    {t('notifications.title')}
                     {unreadCount > 0 && (
                         <span className='notif-panel__badge'>{unreadCount}</span>
                     )}
@@ -187,12 +192,12 @@ const NotificationsPanel = ({ isOpen, onClose, anchorRef }: Props) => {
                 <div className='notif-panel__header-actions'>
                     {unreadCount > 0 && (
                         <button className='notif-panel__text-btn' onClick={handleMarkAllRead}>
-                            Прочитать все
+                            {t('notifications.markAllRead')}
                         </button>
                     )}
                     {items.length > 0 && (
                         <button className='notif-panel__text-btn notif-panel__text-btn--danger' onClick={handleDeleteAll}>
-                            Очистить
+                            {t('notifications.clear')}
                         </button>
                     )}
                 </div>
@@ -203,19 +208,19 @@ const NotificationsPanel = ({ isOpen, onClose, anchorRef }: Props) => {
                     className={`notif-panel__filter-btn ${!unreadOnly ? 'notif-panel__filter-btn--active' : ''}`}
                     onClick={() => setUnreadOnly(false)}
                 >
-                    Все
+                    {t('notifications.all')}
                 </button>
                 <button
                     className={`notif-panel__filter-btn ${unreadOnly ? 'notif-panel__filter-btn--active' : ''}`}
                     onClick={() => setUnreadOnly(true)}
                 >
-                    Непрочитанные {unreadCount > 0 && `(${unreadCount})`}
+                    {t('notifications.unread')} {unreadCount > 0 && `(${unreadCount})`}
                 </button>
             </div>
 
             <div className='notif-panel__list'>
                 {status === 'loading' && items.length === 0 && (
-                    <div className='notif-panel__loading'>Загрузка...</div>
+                    <div className='notif-panel__loading'>{t('notifications.loading')}</div>
                 )}
 
                 {status !== 'loading' && filtered.length === 0 && (
@@ -224,7 +229,7 @@ const NotificationsPanel = ({ isOpen, onClose, anchorRef }: Props) => {
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
                                   stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                         </svg>
-                        <p>{unreadOnly ? 'Нет непрочитанных' : 'Нет уведомлений'}</p>
+                        <p>{unreadOnly ? t('notifications.noUnread') : t('notifications.empty')}</p>
                     </div>
                 )}
 
@@ -232,6 +237,8 @@ const NotificationsPanel = ({ isOpen, onClose, anchorRef }: Props) => {
                     <NotificationItem
                         key={notification.id}
                         notification={notification}
+                        time={formatTime(notification.createdAt)}
+                        deleteTitle={t('notifications.delete')}
                         onRead={handleRead}
                         onDelete={handleDelete}
                     />
