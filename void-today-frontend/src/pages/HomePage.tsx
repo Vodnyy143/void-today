@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import {useAppSelector} from "../store/hooks.ts";
+import {useState} from "react";
+import AuthModal from "../components/modules/AuthModal.tsx";
 
 const features = [
     {
@@ -93,6 +95,8 @@ const HomePage = () => {
     const navigate = useNavigate();
     const { isAuthenticated } = useAppSelector(s => s.auth);
 
+    const [isAuthOpen, setIsAuthOpen] = useState(false);
+
     return (
         <div className="home-page">
 
@@ -133,7 +137,7 @@ const HomePage = () => {
                             <>
                                 <button
                                     className="home-btn home-btn--primary"
-                                    onClick={() => navigate('/todos?view=today')}
+                                    onClick={() => setIsAuthOpen(true)}
                                 >
                                     Начать бесплатно
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -142,7 +146,7 @@ const HomePage = () => {
                                 </button>
                                 <button
                                     className="home-btn home-btn--ghost"
-                                    onClick={() => navigate('/todos?view=today')}
+                                    onClick={() => setIsAuthOpen(true)}
                                 >
                                     Войти
                                 </button>
@@ -308,6 +312,8 @@ const HomePage = () => {
                 <span className="home-footer__logo">VOID TODAY</span>
                 <span className="home-footer__copy">© 2026 · Все права защищены</span>
             </footer>
+
+            <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
         </div>
     );
 };
