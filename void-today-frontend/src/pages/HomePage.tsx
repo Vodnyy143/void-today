@@ -113,8 +113,8 @@ const HomePage = () => {
                     </div>
 
                     <h1 className="home-hero__title">
-                        VOID<br />
-                        <span className="home-hero__title-accent">TODAY</span>
+                        East<br />
+                        <span className="home-hero__title-accent">Calendar</span>
                     </h1>
 
                     <p className="home-hero__desc">
@@ -300,7 +300,7 @@ const HomePage = () => {
                 <h2 className="home-cta__title">Начните прямо сейчас</h2>
                 <p className="home-cta__desc">Бесплатно, без кредитной карты</p>
                 <button className="home-btn home-btn--primary home-btn--lg" onClick={() => navigate('/todos?view=today')}>
-                    Попробовать VOID TODAY
+                    Попробовать EastCalendar
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                         <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                     </svg>

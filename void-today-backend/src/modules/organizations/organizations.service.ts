@@ -14,8 +14,8 @@ import { NotificationsService } from '@modules/notifications/notifications.servi
 @Injectable()
 export class OrganizationsService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly notificationsService: NotificationsService,
+      private readonly prisma: PrismaService,
+      private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(userId: string, dto: CreateOrganizationDto) {
@@ -52,6 +52,7 @@ export class OrganizationsService {
           where: { userId },
           select: { role: true },
         },
+        departments: true,
       },
     });
   }
@@ -110,7 +111,7 @@ export class OrganizationsService {
 
     if (!invitedUser) {
       throw new NotFoundException(
-        `Пользователь с email ${dto.email} не найден`,
+          `Пользователь с email ${dto.email} не найден`,
       );
     }
 
@@ -146,19 +147,19 @@ export class OrganizationsService {
     ]);
 
     await this.notificationsService.notifyInvite(
-      invitedUser.id, // ← было targetUserId (не определён)
-      org?.name ?? 'организацию', // ← было org.name (не определён)
-      inviter?.name ?? inviter?.email ?? 'Кто-то',
+        invitedUser.id, // ← было targetUserId (не определён)
+        org?.name ?? 'организацию', // ← было org.name (не определён)
+        inviter?.name ?? inviter?.email ?? 'Кто-то',
     );
 
     return member;
   }
 
   async updateMemberRole(
-    userId: string,
-    orgId: string,
-    targetUserId: string,
-    dto: UpdateMemberRoleDto,
+      userId: string,
+      orgId: string,
+      targetUserId: string,
+      dto: UpdateMemberRoleDto,
   ) {
     await this.checkRole(userId, orgId, ['OWNER', 'ADMIN']);
 
@@ -197,9 +198,9 @@ export class OrganizationsService {
   // ─── Departments ─────────────────────────────────────────────────
 
   async createDepartment(
-    userId: string,
-    orgId: string,
-    dto: CreateDepartmentDto,
+      userId: string,
+      orgId: string,
+      dto: CreateDepartmentDto,
   ) {
     await this.checkRole(userId, orgId, ['OWNER', 'ADMIN']);
 
@@ -223,10 +224,10 @@ export class OrganizationsService {
   }
 
   async updateDepartment(
-    userId: string,
-    orgId: string,
-    departmentId: string,
-    dto: CreateDepartmentDto,
+      userId: string,
+      orgId: string,
+      departmentId: string,
+      dto: CreateDepartmentDto,
   ) {
     await this.checkRole(userId, orgId, ['OWNER', 'ADMIN']);
 
@@ -245,9 +246,9 @@ export class OrganizationsService {
   }
 
   private async checkRole(
-    userId: string,
-    orgId: string,
-    allowedRoles: string[],
+      userId: string,
+      orgId: string,
+      allowedRoles: string[],
   ) {
     const member = await this.prisma.organizationMember.findUnique({
       where: { userId_orgId: { userId, orgId } },
@@ -259,7 +260,7 @@ export class OrganizationsService {
 
     if (!allowedRoles.includes(member.role)) {
       throw new ForbiddenException(
-        `Требуется роль: ${allowedRoles.join(' или ')}`,
+          `Требуется роль: ${allowedRoles.join(' или ')}`,
       );
     }
 
