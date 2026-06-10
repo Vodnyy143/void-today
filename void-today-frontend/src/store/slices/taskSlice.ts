@@ -361,7 +361,11 @@ const taskSlice = createSlice({
 
             const task = state.tasks.find(t => t.id === updatedCheckpoint.taskId);
             if (task) updateInTask(task);
-            if (state.currentTask?.id === updatedCheckpoint.taskId) updateInTask(state.currentTask);
+
+
+            if (state.currentTask && state.currentTask.id === updatedCheckpoint.taskId) {
+                updateInTask(state.currentTask);
+            }
         });
 
         // Delete Task
