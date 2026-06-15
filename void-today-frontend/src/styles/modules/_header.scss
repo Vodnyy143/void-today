@@ -1,3 +1,5 @@
+// ============= HEADER ADAPTIVE STYLES =============
+
 .header {
   position: sticky;
   top: 0;
@@ -97,8 +99,180 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    position: relative;
+
     &:hover {
       color: #f3f4f6;
+    }
+
+    &--notif {
+      position: relative;
+    }
+
+    &--active {
+      color: var(--color-primary);
+    }
+  }
+
+  &__notif-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-modal);
+  }
+
+  // ============= TABLET ADAPTIVE (769px - 1024px) =============
+  @media (max-width: 1024px) and (min-width: 769px) {
+    &__content {
+      padding: 10px;
+    }
+
+    &__account-email {
+      max-width: 150px;
+      font-size: 13px;
+    }
+
+    &__right {
+      gap: 6px;
+    }
+
+    &__icon-btn {
+      width: 18px;
+      height: 18px;
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  // ============= MOBILE ADAPTIVE (768px и меньше) =============
+  @media (max-width: 768px) {
+    border-bottom: 1px solid var(--border-primary);
+
+    &__content {
+      padding: 10px;
+      gap: 8px;
+    }
+
+    &__left {
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__account-btn {
+      gap: 6px;
+      padding: 4px 8px 4px 4px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__account-avatar {
+      width: 28px;
+      height: 28px;
+      font-size: 12px;
+    }
+
+    &__account-email {
+      max-width: 120px;
+      font-size: 12px;
+    }
+
+    &__account-arrow {
+      width: 14px;
+      height: 14px;
+    }
+
+    &__right {
+      gap: 4px;
+    }
+
+    &__icon-btn {
+      width: 18px;
+      height: 18px;
+      padding: 6px;
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    &__notif-badge {
+      top: -8px;
+      right: -8px;
+      min-width: 16px;
+      height: 16px;
+      font-size: 9px;
+      border-width: 1px;
+    }
+  }
+
+  // ============= MOBILE XS ADAPTIVE (меньше 480px) =============
+  @media (max-width: 480px) {
+    &__content {
+      padding: 8px;
+    }
+
+    &__left {
+      gap: 6px;
+    }
+
+    &__account-btn {
+      gap: 4px;
+      padding: 3px 6px 3px 3px;
+    }
+
+    &__account-avatar {
+      width: 26px;
+      height: 26px;
+      font-size: 11px;
+    }
+
+    &__account-email {
+      max-width: 100px;
+      font-size: 11px;
+    }
+
+    &__account-arrow {
+      display: none;
+    }
+
+    &__right {
+      gap: 2px;
+    }
+
+    &__icon-btn {
+      width: 16px;
+      height: 16px;
+      padding: 4px;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    &__notif-badge {
+      top: -6px;
+      right: -6px;
+      min-width: 14px;
+      height: 14px;
+      font-size: 8px;
+      padding: 0 2px;
     }
   }
 }

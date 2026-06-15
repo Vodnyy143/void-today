@@ -181,70 +181,82 @@ const NotificationsPanel = ({ isOpen, onClose, anchorRef }: Props) => {
     const filtered = unreadOnly ? items.filter(n => !n.read) : items;
 
     return (
-        <div className='notif-panel' ref={panelRef}>
-            <div className='notif-panel__header'>
-                <h3 className='notif-panel__title'>
-                    {t('notifications.title')}
-                    {unreadCount > 0 && (
-                        <span className='notif-panel__badge'>{unreadCount}</span>
-                    )}
-                </h3>
-                <div className='notif-panel__header-actions'>
-                    {unreadCount > 0 && (
-                        <button className='notif-panel__text-btn' onClick={handleMarkAllRead}>
-                            {t('notifications.markAllRead')}
+        <>
+            <div
+                className="notif-panel-overlay"
+                onClick={onClose}
+            />
+
+            <div className='notif-panel' ref={panelRef}>
+                <div className='notif-panel__header'>
+                    <h3 className='notif-panel__title'>
+                        {t('notifications.title')}
+                        {unreadCount > 0 && (
+                            <span className='notif-panel__badge'>{unreadCount}</span>
+                        )}
+                    </h3>
+                    <div className='notif-panel__header-actions'>
+                        {unreadCount > 0 && (
+                            <button className='notif-panel__text-btn' onClick={handleMarkAllRead}>
+                                {t('notifications.markAllRead')}
+                            </button>
+                        )}
+                        {items.length > 0 && (
+                            <button className='notif-panel__text-btn notif-panel__text-btn--danger' onClick={handleDeleteAll}>
+                                {t('notifications.clear')}
+                            </button>
+                        )}
+                        <button className='notif-panel__close' onClick={onClose} aria-label={'notifications.close'}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            </svg>
                         </button>
+                    </div>
+                </div>
+
+                <div className='notif-panel__filters'>
+                    <button
+                        className={`notif-panel__filter-btn ${!unreadOnly ? 'notif-panel__filter-btn--active' : ''}`}
+                        onClick={() => setUnreadOnly(false)}
+                    >
+                        {t('notifications.all')}
+                    </button>
+                    <button
+                        className={`notif-panel__filter-btn ${unreadOnly ? 'notif-panel__filter-btn--active' : ''}`}
+                        onClick={() => setUnreadOnly(true)}
+                    >
+                        {t('notifications.unread')} {unreadCount > 0 && `(${unreadCount})`}
+                    </button>
+                </div>
+
+                <div className='notif-panel__list'>
+                    {status === 'loading' && items.length === 0 && (
+                        <div className='notif-panel__loading'>{t('notifications.loading')}</div>
                     )}
-                    {items.length > 0 && (
-                        <button className='notif-panel__text-btn notif-panel__text-btn--danger' onClick={handleDeleteAll}>
-                            {t('notifications.clear')}
-                        </button>
+
+                    {status !== 'loading' && filtered.length === 0 && (
+                        <div className='notif-panel__empty'>
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
+                                      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                            <p>{unreadOnly ? t('notifications.noUnread') : t('notifications.empty')}</p>
+                        </div>
                     )}
+
+                    {filtered.map(notification => (
+                        <NotificationItem
+                            key={notification.id}
+                            notification={notification}
+                            time={formatTime(notification.createdAt)}
+                            deleteTitle={t('notifications.delete')}
+                            onRead={handleRead}
+                            onDelete={handleDelete}
+                        />
+                    ))}
                 </div>
             </div>
-
-            <div className='notif-panel__filters'>
-                <button
-                    className={`notif-panel__filter-btn ${!unreadOnly ? 'notif-panel__filter-btn--active' : ''}`}
-                    onClick={() => setUnreadOnly(false)}
-                >
-                    {t('notifications.all')}
-                </button>
-                <button
-                    className={`notif-panel__filter-btn ${unreadOnly ? 'notif-panel__filter-btn--active' : ''}`}
-                    onClick={() => setUnreadOnly(true)}
-                >
-                    {t('notifications.unread')} {unreadCount > 0 && `(${unreadCount})`}
-                </button>
-            </div>
-
-            <div className='notif-panel__list'>
-                {status === 'loading' && items.length === 0 && (
-                    <div className='notif-panel__loading'>{t('notifications.loading')}</div>
-                )}
-
-                {status !== 'loading' && filtered.length === 0 && (
-                    <div className='notif-panel__empty'>
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
-                                  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                        </svg>
-                        <p>{unreadOnly ? t('notifications.noUnread') : t('notifications.empty')}</p>
-                    </div>
-                )}
-
-                {filtered.map(notification => (
-                    <NotificationItem
-                        key={notification.id}
-                        notification={notification}
-                        time={formatTime(notification.createdAt)}
-                        deleteTitle={t('notifications.delete')}
-                        onRead={handleRead}
-                        onDelete={handleDelete}
-                    />
-                ))}
-            </div>
-        </div>
+        </>
     );
 };
 

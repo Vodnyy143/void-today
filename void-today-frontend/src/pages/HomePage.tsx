@@ -294,7 +294,6 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* ── CTA ──────────────────────────────────────────────── */}
             <section className="home-cta">
                 <div className="home-cta__glow" />
                 <h2 className="home-cta__title">Начните прямо сейчас</h2>
@@ -307,7 +306,6 @@ const HomePage = () => {
                 </button>
             </section>
 
-            {/* ── FOOTER ───────────────────────────────────────────── */}
             <footer className="home-footer">
                 <span className="home-footer__logo">VOID TODAY</span>
                 <span className="home-footer__copy">© 2026 · Все права защищены</span>

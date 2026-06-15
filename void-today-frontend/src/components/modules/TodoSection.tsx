@@ -27,10 +27,22 @@ const TodoSection = () => {
     const [value, setValue] = useState('');
     const [sortMode, setSortMode] = useState<SortMode>('none');
     const [isMembersSidebarOpen, setIsMembersSidebarOpen] = useState(false);
+    const [isMobileSortMenuOpen, setIsMobileSortMenuOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     const currentView = searchParams.get('view') || 'all';
     const currentStatus = searchParams.get('status');
     const currentProjectId = searchParams.get('project');
+
+    // Слушаем изменение размера окна
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         if (currentProjectId) {
@@ -152,6 +164,13 @@ const TodoSection = () => {
         dispatch(deleteTask(taskId));
     };
 
+    const handleSortModeChange = (mode: SortMode) => {
+        setSortMode(sortMode === mode ? 'none' : mode);
+        if (isMobile) {
+            setIsMobileSortMenuOpen(false);
+        }
+    };
+
     const groupedTasks = useMemo(() => {
         const sorted = [...tasks];
 
@@ -260,7 +279,7 @@ const TodoSection = () => {
                 <button
                     className='todo-card__delete'
                     onClick={(e) => {
-                        e.stopPropagation(); // Предотвращаем открытие детального окна
+                        e.stopPropagation();
                         handleDeleteTask(task.id);
                     }}
                 >
@@ -276,37 +295,91 @@ const TodoSection = () => {
         );
     };
 
+    // Мобильное меню сортировки
+    const SortMenu = () => {
+        if (!isMobile || !isMobileSortMenuOpen) return null;
+
+        return (
+            <div className='todo-section__mobile-sort-menu'>
+                <button
+                    className={`todo-section__mobile-sort-item ${sortMode === 'project' ? 'todo-section__mobile-sort-item--active' : ''}`}
+                    onClick={() => handleSortModeChange('project')}
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"/>
+                    </svg>
+                    {t('todos.sortByProject')}
+                </button>
+                <button
+                    className={`todo-section__mobile-sort-item ${sortMode === 'priority' ? 'todo-section__mobile-sort-item--active' : ''}`}
+                    onClick={() => handleSortModeChange('priority')}
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"/>
+                    </svg>
+                    {t('todos.sortByPriority')}
+                </button>
+            </div>
+        );
+    };
+
     return (
         <section className='todo-section'>
             <div className='todo-section__header'>
                 <p className='todo-section__view-btn'>{getViewTitle()}</p>
                 <div className='todo-section__sort'>
-                    <button
-                        className={`todo-section__sort-btn ${sortMode === 'project' ? 'todo-section__sort-btn--active' : ''}`}
-                        onClick={() => setSortMode(sortMode === 'project' ? 'none' : 'project')}
-                        title={t('todos.sortByProject')}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"/>
-                        </svg>
-                    </button>
-                    <button
-                        className={`todo-section__sort-btn ${sortMode === 'priority' ? 'todo-section__sort-btn--active' : ''}`}
-                        onClick={() => setSortMode(sortMode === 'priority' ? 'none' : 'priority')}
-                        title={t('todos.sortByPriority')}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"/>
-                        </svg>
-                    </button>
+                    {!isMobile ? (
+                        <>
+                            <button
+                                className={`todo-section__sort-btn ${sortMode === 'project' ? 'todo-section__sort-btn--active' : ''}`}
+                                onClick={() => handleSortModeChange('project')}
+                                title={t('todos.sortByProject')}
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"/>
+                                </svg>
+                            </button>
+                            <button
+                                className={`todo-section__sort-btn ${sortMode === 'priority' ? 'todo-section__sort-btn--active' : ''}`}
+                                onClick={() => handleSortModeChange('priority')}
+                                title={t('todos.sortByPriority')}
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"/>
+                                </svg>
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            className={`todo-section__header-btn ${isMobileSortMenuOpen ? 'todo-section__header-btn--active' : ''}`}
+                            onClick={() => setIsMobileSortMenuOpen(!isMobileSortMenuOpen)}
+                            title={t('todos.sortByPriority')}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6h18M3 12h18M3 18h18"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"/>
+                            </svg>
+                        </button>
+                    )}
+
                     {currentProjectId && (
                         <button
                             className={`todo-section__header-btn ${isMembersSidebarOpen ? 'todo-section__header-btn--active' : ''}`}
@@ -321,6 +394,8 @@ const TodoSection = () => {
                     )}
                 </div>
             </div>
+
+            <SortMenu />
 
             <div className='todo-section__stats'>
                 <div className='todo-section__stat'>

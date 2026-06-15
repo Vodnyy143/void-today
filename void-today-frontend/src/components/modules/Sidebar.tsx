@@ -5,7 +5,12 @@ import {clearError, createProject, getProjects} from "../../store/slices/project
 import CreateProjectModal from "./CreateProjectModal.tsx";
 import {useTranslation} from "../../i18n/useTranslation.ts";
 
-const Sidebar = () => {
+interface SidebarProps {
+    isOpen?: boolean;
+    onClose?: () => void;
+}
+
+const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useAppDispatch();
@@ -14,9 +19,20 @@ const Sidebar = () => {
     const { projects, isLoading, error } = useAppSelector((state) => state.projects);
     const [searchQuery, setSearchQuery] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     const [searchParams] = useSearchParams();
     const currentProjectId = searchParams.get('project') ?? projects[0]?.id ?? '';
+
+    // Слушаем изменение размера окна
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         dispatch(getProjects());
@@ -43,9 +59,29 @@ const Sidebar = () => {
         return location.pathname === path;
     };
 
+    // Закрываем сайдбар при клике на пункт (только на мобильном)
+    const handleItemClick = (path: string) => {
+        navigate(path);
+        if (isMobile && onClose) {
+            onClose();
+        }
+    };
+
+    const sidebarClass = isMobile
+        ? `sidebar ${isOpen ? 'sidebar--open' : ''}`
+        : 'sidebar';
+
     return (
         <>
-            <aside className='sidebar'>
+            {isMobile && isOpen && (
+                <div
+                    className={`sidebar-overlay ${isOpen ? 'sidebar-overlay--visible' : ''}`}
+                    onClick={onClose}
+                    aria-hidden="true"
+                />
+            )}
+
+            <aside className={sidebarClass}>
                 <div className='sidebar__search'>
                     <svg className='sidebar__search-icon' width="16" height="16" viewBox="0 0 24 24" fill="none">
                         <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
@@ -62,7 +98,7 @@ const Sidebar = () => {
                 <div className='sidebar__section'>
                     <button
                         className={`sidebar__item ${isActive('/todos?view=today') ? 'sidebar__item--active' : ''}`}
-                        onClick={() => navigate('/todos?view=today')}
+                        onClick={() => handleItemClick('/todos?view=today')}
                     >
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#10b981' }}>
                             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
@@ -75,7 +111,7 @@ const Sidebar = () => {
 
                     <button
                         className={`sidebar__item ${isActive('/todos?view=tomorrow') ? 'sidebar__item--active' : ''}`}
-                        onClick={() => navigate('/todos?view=tomorrow')}
+                        onClick={() => handleItemClick('/todos?view=tomorrow')}
                     >
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#f97316' }}>
                             <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -87,7 +123,7 @@ const Sidebar = () => {
 
                     <button
                         className={`sidebar__item ${isActive('/todos?view=week') ? 'sidebar__item--active' : ''}`}
-                        onClick={() => navigate('/todos?view=week')}
+                        onClick={() => handleItemClick('/todos?view=week')}
                     >
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#8b5cf6' }}>
                             <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
@@ -100,7 +136,7 @@ const Sidebar = () => {
 
                     <button
                         className={`sidebar__item ${isActive('/events') ? 'sidebar__item--active' : ''}`}
-                        onClick={() => navigate('/events')}
+                        onClick={() => handleItemClick('/events')}
                     >
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#14b8a6' }}>
                             <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
@@ -113,7 +149,7 @@ const Sidebar = () => {
 
                     <button
                         className={`sidebar__item ${isActive('/organizations') ? 'sidebar__item--active' : ''}`}
-                        onClick={() => navigate('/organizations')}
+                        onClick={() => handleItemClick('/organizations')}
                     >
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#f59e0b' }}>
                             <path d="M3 21h18M3 7v14M21 7v14M6 7V5a2 2 0 012-2h8a2 2 0 012 2v2M9 21v-4a3 3 0 016 0v4"
@@ -124,7 +160,7 @@ const Sidebar = () => {
 
                     <button
                         className={`sidebar__item ${isActive('/kanban') ? 'sidebar__item--active' : ''}`}
-                        onClick={() => navigate(`/kanban?project=${currentProjectId}`)}
+                        onClick={() => handleItemClick(`/kanban?project=${currentProjectId}`)}
                     >
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#06b6d4' }}>
                             <rect x="3" y="3" width="5" height="18" rx="1" stroke="currentColor" strokeWidth="2"/>
@@ -136,7 +172,7 @@ const Sidebar = () => {
 
                     <button
                         className={`sidebar__item ${isActive('/sprints') ? 'sidebar__item--active' : ''}`}
-                        onClick={() => navigate(`/sprints?project=${currentProjectId}`)}
+                        onClick={() => handleItemClick(`/sprints?project=${currentProjectId}`)}
                     >
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#f97316' }}>
                             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -146,7 +182,7 @@ const Sidebar = () => {
 
                     <button
                         className={`sidebar__item ${isActive('/todos?status=DONE') ? 'sidebar__item--active' : ''}`}
-                        onClick={() => navigate('/todos?status=DONE')}
+                        onClick={() => handleItemClick('/todos?status=DONE')}
                     >
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#6b7280' }}>
                             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
@@ -157,7 +193,7 @@ const Sidebar = () => {
 
                     <button
                         className={`sidebar__item ${isActive('/todos') ? 'sidebar__item--active' : ''}`}
-                        onClick={() => navigate('/todos')}
+                        onClick={() => handleItemClick('/todos')}
                     >
                         <svg className='sidebar__item-icon' width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: '#3b82f6' }}>
                             <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
@@ -183,7 +219,7 @@ const Sidebar = () => {
                             <button
                                 key={project.id}
                                 className={`sidebar__item ${isActive(`/todos?project=${project.id}`) ? 'sidebar__item--active' : ''}`}
-                                onClick={() => navigate(`/todos?project=${project.id}`)}
+                                onClick={() => handleItemClick(`/todos?project=${project.id}`)}
                             >
                                 <div
                                     className='sidebar__item-dot'

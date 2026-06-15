@@ -8,7 +8,12 @@ import NotificationsPanel from "./NotificationsPanel.tsx";
 import {fetchUnreadCount} from "../../store/slices/notificationsSlice.ts";
 import {useTranslation} from "../../i18n/useTranslation.ts";
 
-const Header = () => {
+interface HeaderProps {
+    onToggleSidebar?: () => void;
+    isSidebarOpen?: boolean;
+}
+
+const Header = ({ onToggleSidebar, isSidebarOpen = false }: HeaderProps) => {
     const dispatch = useAppDispatch();
     const { isAuthenticated, user } = useAppSelector((state) => state.auth);
     const { unreadCount } = useAppSelector((state) => state.notifications);
@@ -20,9 +25,20 @@ const Header = () => {
     const [settingsInitialTab, setSettingsInitialTab] = useState<'account' | 'premium' | 'general' | 'appearance' | 'about'>('account');
     const [isReportOpen, setIsReportOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     const avatarButtonRef = useRef<HTMLButtonElement>(null);
     const notifButtonRef = useRef<HTMLButtonElement>(null);
+
+    // Слушаем изменение размера окна
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -40,6 +56,23 @@ const Header = () => {
         <>
             <header className='header'>
                 <div className='header__content'>
+                    {isMobile && isAuthenticated && (
+                        <button
+                            className='sidebar-toggle'
+                            onClick={onToggleSidebar}
+                            title={isSidebarOpen ? 'header.closeSidebar' : 'header.openSidebar'}
+                            aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6h18M3 12h18M3 18h18"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"/>
+                            </svg>
+                        </button>
+                    )}
+
                     <div className='header__left'>
                         {isAuthenticated
                             ? (
@@ -78,29 +111,34 @@ const Header = () => {
 
                     {isAuthenticated && (
                         <div className='header__right'>
-                            <button
-                                className='header__icon-btn'
-                                title={t('header.premium')}
-                                onClick={() => {
-                                    setSettingsInitialTab('premium');
-                                    setIsSettingsModalOpen(true);
-                                }}
-                            >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-                                          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </button>
+                            {/* На мобильном скрываем некоторые кнопки */}
+                            {!isMobile && (
+                                <>
+                                    <button
+                                        className='header__icon-btn'
+                                        title={t('header.premium')}
+                                        onClick={() => {
+                                            setSettingsInitialTab('premium');
+                                            setIsSettingsModalOpen(true);
+                                        }}
+                                    >
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                                                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </button>
 
-                            <button
-                                className='header__icon-btn'
-                                title={t('header.report')}
-                                onClick={() => setIsReportOpen(true)}
-                            >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                    <path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </button>
+                                    <button
+                                        className='header__icon-btn'
+                                        title={t('header.report')}
+                                        onClick={() => setIsReportOpen(true)}
+                                    >
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                            <path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </button>
+                                </>
+                            )}
 
                             {/* Кнопка уведомлений с бейджем */}
                             <button
@@ -141,7 +179,9 @@ const Header = () => {
 
             <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
 
-            <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
+            {!isMobile && (
+                <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
+            )}
 
             <NotificationsPanel
                 isOpen={isNotificationsOpen}

@@ -20,6 +20,7 @@ const EventsSection = () => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [isTaskListOpen, setIsTaskListOpen] = useState(false);
     const [activeTask, setActiveTask] = useState<any>(null);
+    const [mobileColumn, setMobileColumn] = useState<'scheduled' | 'completed'>('scheduled');
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -158,6 +159,22 @@ const EventsSection = () => {
                     </div>
 
                     <div className='events-section__timeline'>
+                        <div className='events-section__mobile-tabs'>
+                            <button
+                                type="button"
+                                className={`events-section__mobile-tab ${mobileColumn === 'scheduled' ? 'events-section__mobile-tab--active' : ''}`}
+                                onClick={() => setMobileColumn('scheduled')}
+                            >
+                                Scheduled
+                            </button>
+                            <button
+                                type="button"
+                                className={`events-section__mobile-tab ${mobileColumn === 'completed' ? 'events-section__mobile-tab--active' : ''}`}
+                                onClick={() => setMobileColumn('completed')}
+                            >
+                                Completed
+                            </button>
+                        </div>
 
 
                         <div className='events-section__schedule'>
@@ -221,7 +238,7 @@ import { useDraggable } from '@dnd-kit/core';
 
 const ScheduledColumn = ({ hours, getTasksForHour, projects }: any) => {
     return (
-        <div className='events-section__column'>
+        <div className='events-section__column events-section__column--scheduled'> {/* было без --scheduled */}
             <div className='events-section__column-header'>Scheduled</div>
             <div className='events-section__slots'>
                 {hours.map((hour: number) => (

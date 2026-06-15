@@ -1,46 +1,75 @@
 .events-wrapper {
   display: flex;
   height: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 .events-section {
   flex: 1;
   padding: 32px 24px;
   background: var(--bg-primary);
-  height: calc(100vh - 60px);   // min-height → height
+  height: calc(100vh - 60px);
   color: var(--text-primary);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 16px 12px;
+    height: calc(100vh - 56px);
+  }
 
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   &__nav {
     display: flex;
     align-items: center;
     gap: 16px;
+    flex-wrap: wrap;
+
+    @media (max-width: 480px) {
+      width: 100%;
+      gap: 10px;
+    }
   }
 
   &__title {
     font-size: 24px;
     font-weight: 700;
+
+    @media (max-width: 480px) {
+      font-size: 20px;
+    }
   }
 
   &__controls {
     display: flex;
     align-items: center;
     gap: 8px;
+
+    @media (max-width: 480px) {
+      flex: 1;
+    }
   }
 
   &__nav-btn {
     width: 32px;
     height: 32px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -69,11 +98,19 @@
     &::-webkit-calendar-picker-indicator {
       filter: invert(1);
     }
+
+    @media (max-width: 480px) {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      padding: 6px 8px;
+    }
   }
 
   &__add-btn {
     width: 32px;
     height: 32px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -95,6 +132,11 @@
     gap: 8px;
     margin-bottom: 24px;
     font-size: 20px;
+
+    @media (max-width: 480px) {
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
   }
 
   &__day-label {
@@ -105,11 +147,47 @@
     color: var(--text-secondary);
   }
 
+  // ---- NEW: мобильные табы Scheduled / Completed ----
+  &__mobile-tabs {
+    display: none;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    @media (max-width: 600px) {
+      display: flex;
+    }
+  }
+
+  &__mobile-tab {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    background: var(--bg-modal);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &--active {
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+    }
+  }
+  // ----------------------------------------------------
+
   &__timeline {
     display: flex;
     gap: 16px;
     flex: 1;
     min-height: 0;
+
+    @media (max-width: 480px) {
+      gap: 8px;
+    }
   }
 
   &__time-col {
@@ -118,7 +196,7 @@
     background: var(--bg-primary);
 
     .events-section__column-header {
-      flex-shrink: 0;  // ← не сжимается
+      flex-shrink: 0;
     }
   }
 
@@ -129,6 +207,12 @@
     font-size: 12px;
     color: var(--text-tertiary);
     padding-right: 12px;
+
+    @media (max-width: 480px) {
+      height: 50px;
+      font-size: 11px;
+      padding-right: 6px;
+    }
   }
 
   &__schedule {
@@ -145,6 +229,17 @@
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-lg);
     overflow: hidden;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 48px 1fr 1fr;
+      min-width: 520px; // на планшетах при необходимости можно скроллить
+    }
+
+    // на мобилке остаётся колонка времени + ОДНА активная колонка (по табу)
+    @media (max-width: 600px) {
+      grid-template-columns: 44px 1fr;
+      min-width: 0;
+    }
   }
 
   &__column {
@@ -152,6 +247,22 @@
 
     &--completed {
       opacity: 0.7;
+    }
+
+    @media (max-width: 600px) {
+      &--scheduled,
+      &--completed {
+        display: none;
+      }
+    }
+  }
+
+  // показываем нужную колонку в зависимости от выбранного таба
+  &__columns--scheduled &__column--scheduled,
+  &__columns--completed &__column--completed {
+    @media (max-width: 600px) {
+      display: block;
+      opacity: 1; // на мобиле снимаем затемнение у completed, чтобы было читаемо
     }
   }
 
@@ -163,9 +274,15 @@
     text-align: center;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-primary);
-    height: 44px;        // ← фиксируй высоту явно
+    height: 44px;
     box-sizing: border-box;
     flex-shrink: 0;
+
+    @media (max-width: 480px) {
+      padding: 10px 8px;
+      font-size: 13px;
+      height: 40px;
+    }
   }
 
   &__slots {
@@ -187,6 +304,11 @@
     &--over {
       background: rgba(59, 130, 246, 0.1);
       border: 2px dashed var(--color-primary);
+    }
+
+    @media (max-width: 480px) {
+      height: 50px;
+      padding: 4px 6px;
     }
   }
 
@@ -215,6 +337,10 @@
     &:hover {
       transform: translateX(2px);
     }
+
+    @media (max-width: 480px) {
+      padding: 5px 8px;
+    }
   }
 
   &__task-content {
@@ -232,11 +358,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    @media (max-width: 480px) {
+      font-size: 12px;
+    }
   }
 
   &__task-duration {
     font-size: 11px;
     color: var(--text-tertiary);
+
+    @media (max-width: 480px) {
+      font-size: 10px;
+    }
   }
 
   &__task-play {
@@ -253,6 +387,16 @@
 
     &:hover {
       color: var(--color-primary);
+    }
+
+    @media (max-width: 480px) {
+      width: 20px;
+      height: 20px;
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
     }
   }
 }

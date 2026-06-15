@@ -115,7 +115,11 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'account' }: Props) => {
                         {TABS.map(tab => (
                             <button
                                 key={tab.id}
-                                className={`settings-modal__nav-item ${activeTab === tab.id ? 'settings-modal__nav-item--active' : ''}`}
+                                className={`settings-modal__nav-item ${
+                                    activeTab === tab.id
+                                        ? 'settings-modal__nav-item--active'
+                                        : ''
+                                }`}
                                 onClick={() => setActiveTab(tab.id)}
                             >
                                 <i className={`ti ${tab.icon}`} />

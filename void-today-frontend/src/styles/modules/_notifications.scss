@@ -269,3 +269,152 @@
     background: rgba(239, 68, 68, 0.1);
   }
 }
+/* =========================
+   TABLET
+========================= */
+@media (max-width: 992px) {
+  .notif-panel {
+    width: min(380px, calc(100vw - 24px));
+    right: 12px;
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 768px) {
+  .notif-panel {
+    top: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    max-height: none;
+    border-radius: 0;
+    border: none;
+    animation: notif-mobile-in 0.2s ease;
+  }
+
+  @keyframes notif-mobile-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .notif-panel__header {
+    padding: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .notif-panel__header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .notif-panel__filters {
+    padding: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .notif-panel__filter-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .notif-panel__list {
+    padding: 8px;
+  }
+
+  .notif-item {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .notif-item__delete {
+    opacity: 1;
+  }
+
+  .notif-item__text {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .notif-item__time {
+    font-size: 12px;
+  }
+
+  .notif-item__icon {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* =========================
+   SMALL MOBILE
+========================= */
+@media (max-width: 480px) {
+  .notif-panel__header {
+    padding: 14px;
+  }
+
+  .notif-panel__title {
+    font-size: 15px;
+  }
+
+  .notif-panel__badge {
+    min-width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
+
+  .notif-panel__text-btn {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+
+  .notif-panel__filters {
+    padding: 10px;
+  }
+
+  .notif-panel__filter-btn {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .notif-item {
+    padding: 10px;
+  }
+
+  .notif-item__icon {
+    width: 32px;
+    height: 32px;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  .notif-item__text {
+    font-size: 13px;
+  }
+
+  .notif-item__time {
+    font-size: 11px;
+  }
+
+  .notif-item__dot {
+    width: 6px;
+    height: 6px;
+  }
+}

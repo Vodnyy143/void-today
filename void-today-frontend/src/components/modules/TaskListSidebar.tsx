@@ -68,39 +68,44 @@ const TaskListSidebar = ({ isOpen, onClose }: Props) => {
     });
 
     return (
-        <aside className='task-list-sidebar'>
-            <div className='task-list-sidebar__header'>
-                <h2 className='task-list-sidebar__title'>Schedule Tasks</h2>
-                <button className='task-list-sidebar__close' onClick={onClose}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <>
+            {/* NEW: подложка-затемнение для мобильного режима оверлея */}
+            <div className='task-list-sidebar__backdrop' onClick={onClose} />
+
+            <aside className='task-list-sidebar'>
+                <div className='task-list-sidebar__header'>
+                    <h2 className='task-list-sidebar__title'>Schedule Tasks</h2>
+                    <button className='task-list-sidebar__close' onClick={onClose}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div className='task-list-sidebar__search'>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
+                        <path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
-                </button>
-            </div>
+                    <input
+                        type="text"
+                        placeholder="Search tasks..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
 
-            <div className='task-list-sidebar__search'>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
-                    <path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                <input
-                    type="text"
-                    placeholder="Search tasks..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </div>
-
-            <div className='task-list-sidebar__content'>
-                {availableTasks.length === 0 ? (
-                    <div className='task-list-sidebar__empty'>No tasks found</div>
-                ) : (
-                    availableTasks.map(task => (
-                        <DraggableSidebarTask key={task.id} task={task} />
-                    ))
-                )}
-            </div>
-        </aside>
+                <div className='task-list-sidebar__content'>
+                    {availableTasks.length === 0 ? (
+                        <div className='task-list-sidebar__empty'>No tasks found</div>
+                    ) : (
+                        availableTasks.map(task => (
+                            <DraggableSidebarTask key={task.id} task={task} />
+                        ))
+                    )}
+                </div>
+            </aside>
+        </>
     );
 };
 

@@ -1075,3 +1075,195 @@
     line-height: 1.5;
   }
 }
+/* =========================
+   TABLET
+========================= */
+@media (max-width: 992px) {
+  .organizations-page {
+    padding: 24px 16px;
+
+    &__grid {
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+  }
+
+  .org-detail {
+    padding: 20px 16px;
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 768px) {
+  .organizations-page {
+    padding: 16px;
+
+    &__header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    &__title {
+      font-size: 20px;
+    }
+
+    &__create-btn {
+      justify-content: center;
+      width: 100%;
+    }
+
+    &__grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  .org-card {
+    padding: 14px;
+
+    &__delete {
+      opacity: 1;
+      position: static;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    &__meta {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  }
+
+  .org-detail {
+    padding: 16px;
+
+    &__header {
+      align-items: flex-start;
+    }
+
+    &__name {
+      font-size: 18px;
+      word-break: break-word;
+    }
+
+    &__tabs {
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    &__tab {
+      flex-shrink: 0;
+      padding: 10px 14px;
+    }
+
+    &__section-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    &__invite-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    &__settings-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    &__add-dept {
+      flex-direction: column;
+
+      button,
+      input {
+        width: 100%;
+      }
+    }
+  }
+
+  .member-row,
+  .dept-row {
+    padding: 10px;
+
+    &__remove,
+    &__delete {
+      opacity: 1;
+    }
+  }
+
+  .create-org-modal,
+  .invite-modal {
+    width: calc(100vw - 24px);
+    max-width: 440px;
+
+    &__footer {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  .pm-sidebar {
+    width: 100vw;
+  }
+}
+
+/* =========================
+   SMALL MOBILE
+========================= */
+@media (max-width: 480px) {
+  .org-card {
+    gap: 10px;
+
+    &__logo {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+
+    &__name {
+      font-size: 14px;
+    }
+
+    &__meta {
+      font-size: 11px;
+    }
+  }
+
+  .member-row {
+    &__avatar {
+      width: 32px;
+      height: 32px;
+    }
+
+    &__email {
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .org-detail {
+    &__logo {
+      width: 44px;
+      height: 44px;
+      font-size: 18px;
+    }
+
+    &__name {
+      font-size: 16px;
+    }
+  }
+}
